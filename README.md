@@ -1,2 +1,2 @@
 # processALA
-R package to give easy access to ALA plant occurrence data 
+R package to give easy access to Atlas of Living Australia (ALA) plant occurrence data 
