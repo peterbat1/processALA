@@ -1,14 +1,14 @@
 ###############################################################
 #' Check a taxon name against the National Species List maintained by ALA
 #'
-#' Perform a systematic search of taxonomic resources to determine the status of a taxonomic name through a search of the National Species List using ALA API.
+#' Perform a systematic search of taxonomic resources to determine the status of the taxonomic name of a plant species using the resources of APNI and APC.
 #'
 #' @param thisTaxon Character object holding the name for which a search is to be made.
 #' @param quiet Logical. If TRUE progress messages are written to the console; if FALSE (default) then progress messages are suppressed.
 #'
 #' @return A one row data.frame the following elements:
-#' \item{isValid}{Logical. Is the searched for taxonomic name fouind as an entry in the APNI?}
-#' \item{isAccepted}{Logical. Is the searched for taxonomic name accepted by XXXXXXXXXXXXALA either as an accepted name or a synonym of an accepted name?}
+#' \item{isValid}{Logical. Is the searched for taxonomic name found as an entry in the APNI?}
+#' \item{isAccepted}{Logical. Is the searched for taxonomic name accepted by APC?}
 #' \item{searchName}{Taxonomic name searched for.}
 #' \item{acceptedName}{The accepted taxon name corresponding to the name searched for.}
 #' \item{fullAcceptedName}{Binomial/trinomial + author of the accepted taxon name.}
@@ -32,8 +32,6 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = FALSE)
 
   if (is.null(thisTaxon))
     stop("'thisTaxon' cannot be NULL: please supply a taxonomic name")
-
-  #### checkResult to include fields 'searchTerm' and 'status'
 
   if (quiet) cat("Checking taxon name:",thisTaxon,"\n")
 
