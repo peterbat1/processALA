@@ -96,90 +96,98 @@ fetchJurisdictionInfo <- function(thisTaxon = NULL, trace = FALSE)
 
   #cat("  ",thisTaxon, ": ")
 
-    # Create a data.frame to collect information for this current taxon:
+  # Create a data.frame to collect information for this current taxon:
   newData <- data.frame(taxonGUID = taxonGUID,
-                                  taxon = thisTaxon,
-                                  isAccepted = TRUE,
-                                  isNaturalised = FALSE,
-                                  matrix(NA , 1, length(hdr), dimnames = list(NULL, hdr)),
-                                  stringsAsFactors = FALSE)
+                        taxon = thisTaxon,
+                        isAccepted = TRUE,
+                        isNaturalised = FALSE,
+                        matrix(NA , 1, length(hdr), dimnames = list(NULL, hdr)),
+                        stringsAsFactors = FALSE)
 
-    if (!grepl("NZOR", taxonGUID))
+  if (!grepl("NZOR", taxonGUID))
+  {
+    # Fetch taxon record
+    qString <- paste0(taxonGUID,".json")
+
+    thisURL <- paste0(targetURL, qString)
+
+    rawResponse <- try(RCurl::getURL(url = thisURL, headerfunction = h$update))
+
+    if (class(rawResponse) != "try-error")
     {
-      # Fetch taxon record
-      qString <- paste0(taxonGUID,".json")
-
-      thisURL <- paste0(targetURL, qString)
-
-      rawResponse <- try(RCurl::getURL(url = thisURL, headerfunction = h$update))
-
-      if (class(rawResponse) != "try-error")
+      responseCode <- as.integer(h$value()["status"])
+      if (responseCode == 200)
       {
-        responseCode <- as.integer(h$value()["status"])
-        if (responseCode == 200)
-        {
-          cookedResponse <- try(rjson::fromJSON(rawResponse))
+        cookedResponse <- try(rjson::fromJSON(rawResponse))
 
-          if (class(cookedResponse) != "try-error")
+        if (class(cookedResponse) != "try-error")
+        {
+          APC_distribution_str <- cookedResponse$treeElement$profile$`APC Dist.`$value
+          #print(APC_distribution_str)
+
+          if (is.null(APC_distribution_str))
           {
-            APC_distribution_str <- cookedResponse$treeElement$profile$`APC Dist.`$value
-            #print(APC_distribution_str)
-
-            if (is.null(APC_distribution_str))
-            {
-              isNaturalised <- "Unknown"
-              newData[1, "isNaturalised"] <- "Unknown"
-            }
-            else
-            {
-              isNaturalised <- any(grepl("NATURALISED", toupper(APC_distribution_str)))
-              regionInfo <- unlist(strsplit(APC_distribution_str, ", "))
-
-              # Find entries which are without a qualifier. They are presumed to be
-              # "native" regions. Add "(native)" qualifier to them so that the next
-              # processing step can deal with a uniform data structure
-              bareNativeInd <- which(!grepl("native|naturalised", regionInfo))
-              if (length(bareNativeInd) > 0)
-              {
-                for (ii in bareNativeInd) regionInfo[ii] <- paste(regionInfo[ii], "(native)")
-              }
-
-              regionParts <- strsplit(regionInfo, " (", fixed = TRUE)
-              regionName <- unlist(lapply(regionParts, function(el){trimws(el[1])}))
-              regionStatus <- unlist(lapply(regionParts, function(el){trimws(sub(")","",el[2], fixed = TRUE))}))
-
-              if (trace) print(regionStatus)
-
-              # Deal with names shown as e.g. "?Tas" for Genranium homeannum. Move the
-              # "doubtfully" marker to regionStatus where it is SUPPOSED to be!!!!!
-              mismarkedDoubtfulInd <- grep("?", regionName, fixed = TRUE)
-              if (length(mismarkedDoubtfulInd) > 0)
-              {
-                regionStatus <- sub("(", "(doubtfully ", regionStatus[mismarkedDoubtfulInd], fixed = TRUE)
-                regionName <- sub("?", "", regionName[mismarkedDoubtfulInd], fixed = TRUE)
-              }
-
-              newData[1, regionName] <- regionStatus
-            }
-
-            #cat("Success\n")
-            if (trace) cat("NATURALISED =", isNaturalised,": NATIVE =", any(grepl("NATIVE", toupper(regionStatus))), "\n")
+            isNaturalised <- "Unknown"
+            newData[1, "isNaturalised"] <- "Unknown"
           }
-        }
-        else
-        {
-          cat("Bad response code:",responseCode,"\n")
-          if (trace) print(rawResponse)
-          newData <- NA
+          else
+          {
+            isNaturalised <- any(grepl("NATURALISED", toupper(APC_distribution_str)))
+            regionInfo <- unlist(strsplit(APC_distribution_str, ", "))
+
+            # Find entries which are without a qualifier. They are presumed to be
+            # "native" regions. Add "(native)" qualifier to them so that the next
+            # processing step can deal with a uniform data structure
+            bareNativeInd <- which(!grepl("native|naturalised", regionInfo))
+            if (length(bareNativeInd) > 0)
+            {
+              for (ii in bareNativeInd) regionInfo[ii] <- paste(regionInfo[ii], "(native)")
+            }
+
+            regionParts <- strsplit(regionInfo, " (", fixed = TRUE)
+            regionName <- unlist(lapply(regionParts, function(el){trimws(el[1])}))
+            regionStatus <- unlist(lapply(regionParts, function(el){trimws(sub(")","",el[2], fixed = TRUE))}))
+
+            if (trace) print(regionStatus)
+
+            # Deal with names shown as e.g. "?Tas" for Genranium homeannum. Move the
+            # "doubtfully" marker to regionStatus where it is SUPPOSED to be!!!!!
+            mismarkedDoubtfulInd <- grep("?", regionName, fixed = TRUE)
+            if (length(mismarkedDoubtfulInd) > 0)
+            {
+              regionStatus <- sub("(", "(doubtfully ", regionStatus[mismarkedDoubtfulInd], fixed = TRUE)
+              regionName <- sub("?", "", regionName[mismarkedDoubtfulInd], fixed = TRUE)
+            }
+
+            newData[1, regionName] <- regionStatus
+          }
+
+          #cat("Success\n")
+          if (trace) cat("NATURALISED =", isNaturalised,": NATIVE =", any(grepl("NATIVE", toupper(regionStatus))), "\n")
         }
       }
       else
       {
-        cat("Horrible error!\n")
-        if (trace) print(rawResponse)
+        if (trace)
+        {
+          cat("Bad response code:",responseCode,"\n")
+          print(rawResponse)
+        }
+
         newData <- NA
       }
     }
+    else
+    {
+      if (trace)
+      {
+        cat("Horrible error!\n")
+        print(rawResponse)
+      }
+
+        newData <- NA
+    }
+  }
 
   return(newData)
 

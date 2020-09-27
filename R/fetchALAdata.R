@@ -35,9 +35,9 @@
 #'  fetchALAdata(c("Acacia linifolia","Wilkiea hugeliana","Banksia ericifolia","Angophora costata"),
 #'               baseOutpath = "/home/peterw/Restore and Renew/newData/")}
 
-fetchALAdata <- function(taxonList = NULL, baseOutputPath = NULL, doNameCheck = TRUE, verbose = FALSE)
+fetchALAdata <- function(taxonList = NULL, baseOutputPath = defaultOutputFolder, doNameCheck = TRUE, verbose = FALSE)
 {
-  ALA4R::ala_config(caching = "off", cache_directory="~/Downloads/ALA_cache")
+  #ALA4R::ala_config(caching = "off", cache_directory="~/Downloads/ALA_cache")
 
   if (is.null(taxonList))
     stop("'taxonList' must provide one or more taxon names")
@@ -75,7 +75,7 @@ fetchALAdata <- function(taxonList = NULL, baseOutputPath = NULL, doNameCheck = 
       if (length(taxonList) == 0) stop("There are no taxa left to process")
     }
 
-    cat("  Name check complted\n")
+    cat("  Name check completed\n")
   }
 
   # OK, we got this far, so now for the downloads...

@@ -28,7 +28,7 @@
 #' \dontrun{}
 checkTaxonName <- function(thisTaxon = NULL, quiet = FALSE)
 {
-  ALA4R::ala_config(caching = "off")
+  #ALA4R::ala_config(caching = "off")
 
   if (is.null(thisTaxon))
     stop("'thisTaxon' cannot be NULL: please supply a taxonomic name")

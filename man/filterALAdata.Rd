@@ -6,7 +6,7 @@
 \usage{
 filterALAdata(
   taxa = NULL,
-  baseDataPath = NULL,
+  baseDataPath = defaultOutputFolder,
   recType = c("herbariumRecords", "humanObservations", "surveyRecords"),
   removeDuplicates = TRUE,
   removeMissingCoords = TRUE,

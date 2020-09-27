@@ -6,7 +6,7 @@
 \usage{
 fetchALAdata(
   taxonList = NULL,
-  baseOutputPath = NULL,
+  baseOutputPath = defaultOutputFolder,
   doNameCheck = TRUE,
   verbose = FALSE
 )
