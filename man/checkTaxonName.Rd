@@ -13,8 +13,8 @@ checkTaxonName(thisTaxon = NULL, quiet = FALSE)
 }
 \value{
 A one row data.frame the following elements:
-\item{isValid}{Logical. Is the searched for taxonomic name fouind as an entry in the APNI?}
-\item{isAccepted}{Logical. Is the searched for taxonomic name accepted by XXXXXXXXXXXXALA either as an accepted name or a synonym of an accepted name?}
+\item{isValid}{Logical. Is the searched for taxonomic name found as an entry in the APNI?}
+\item{isAccepted}{Logical. Is the searched for taxonomic name accepted by APC?}
 \item{searchName}{Taxonomic name searched for.}
 \item{acceptedName}{The accepted taxon name corresponding to the name searched for.}
 \item{fullAcceptedName}{Binomial/trinomial + author of the accepted taxon name.}
@@ -29,7 +29,7 @@ A one row data.frame the following elements:
 \item{apcFamily}{APC family of the accepted taxon.}
 }
 \description{
-Perform a systematic search of taxonomic resources to determine the status of a taxonomic name through a search of the National Species List using ALA API.
+Perform a systematic search of taxonomic resources to determine the status of the taxonomic name of a plant species using the resources of APNI and APC.
 }
 \examples{
 \dontrun{}
