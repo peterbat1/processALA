@@ -29,10 +29,10 @@ To install the package in your local _**R**_ installation, it is easiest to ensu
 
 It is most productive to install these packages using the package management features in R-Studio as they pull in a fair number of dependencies and it is a pain to work through that list manually before you finally install the target package.
 
-To complete the installation of **processALA**, ensure that the package **devtools** is installed from CRAN, then enter the following command at the prompt in the _**R**_ console:
+To complete the installation of **processALA**, ensure that the package **remotes** is installed from CRAN, then enter the following command at the prompt in the _**R**_ console:
 
 ```{r eval=FALSE}
-devtools::install_github("peterbat1/processALA")
+remotes::install_github("peterbat1/processALA", build_vignettes = TRUE)
 ```
 
 As with any _**R**_-package installed on your system, your scripts must begin with:
