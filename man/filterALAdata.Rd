@@ -45,11 +45,13 @@ Applies one or more filters to previously downloaded ALA data
 {
 Data sourced from the Atlas of Living Australia (ALA) needs to be cleaned and reviewed before it is fit for use. This function allows data files output by the sister function \code{\link{fetchALAdata}} to be passed through a selection of automated preliminary filters. Users may filter:
 \itemize{
-\item missing or corrupted geo-coordinates
-\item cultivated specimens (sadly, some herbaria include samples taken from cultivated plants and include them in normal voucher collection data! Canberra and Melbourne are serial offenders here)
-\item duplicated records
+\item missing or corrupted geo-coordinates;
+\item cultivated specimens (sadly, some herbaria include samples taken from cultivated plants in the normal voucher collection data! Canberra and Melbourne are serial offenders here);
+\item duplicated records;
 \item records from jurisdictions for which APC says a taxon does \emph{not} occur (calls \code{\link{fetchJurisdictionInfo}}).}
+
 Any combination of filters may be applied.
+
 This function allows you to practice safe data use by applying some sensible filtering processes. However good they may be, automated filters may miss some bad records. \emph{You should \bold{always} review the output from this function before using the data.}
 }
 }

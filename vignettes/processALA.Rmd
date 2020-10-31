@@ -1,26 +1,35 @@
 ---
 title: "processALA: An R-package to help manage ALA data for plant species"
 author: "Peter D. Wilson"
-date: "28 September 2020"
+date: "31 October 2020"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{processALA}
+  %\VignetteIndexEntry{processALA: An R-package to help manage ALA data for plant species}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
-
+  
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
+collapse = TRUE,
+comment = "#>"
 )
 ```
 
-**processALA** is an _**R**_-package developed to make downloading and cleaning occurrence data for plant species from the Atlas of Living Australia (ALA) a simple process. By stream-lining the way you interact with ALA, the package should allow you to check taxonomic names and obtain useful occurrence data "live". That is, you can integrate the process of downloading the latest occurrence data into R-scripts and run them whenever you need up to date data. Alternatively, you can use the functions included in the package to run data download and cleaning to periodically refesh sets of local stored data files. This second approach is one I typically use these functions because data from ALA, particularly herbarium data which is the highest value data for most use cases we encounter, changes infrequently. In addition, live iterrogation of ALA depends on a good internet connection and naturally introduces delays to running scripts.
+**processALA** is an _**R**_-package developed to make downloading and cleaning occurrence data for plant species from the Atlas of Living Australia (ALA) a simple process. By stream-lining the way you interact with ALA, the package should allow you to check taxonomic names and obtain useful occurrence data "live". That is, you can integrate the process of downloading the latest occurrence data into R-scripts and run them whenever you need up to date data. Alternatively, you can use the functions included in the package to run data download and cleaning to periodically refresh sets of local stored data files. This second approach can be the most efficient method because data from ALA changes infrequently, which is particularly true of herbarium data which is the highest value data for most use cases we encounter. In addition, live interrogation of ALA depends on a good internet connection and naturally introduces delays to running scripts.
 
 To view and download the source go to: https://github.com/peterbat1/processALA.
 
-To install the package in your local _**R**_ installation, ensure that the package **devtools** is installed from CRAN, then enter following at the prompt in the _**R**_ console:
+To install the package in your local _**R**_ installation, it is easiest to ensure that the following dependencies are installed in your local _**R**_ system:
+
+* ALA4R
+* RCurl
+* rjson
+* ozmaps (for running the worked example in this vignette)
+
+It is most productive to install these packages using the package management features in R-Studio as they pull in a fair number of dependencies and it is a pain to work through that list manually before you finally install the target package.
+
+To complete the installation of **processALA**, ensure that the package **devtools** is installed from CRAN, then enter the following command at the prompt in the _**R**_ console:
 
 ```{r eval=FALSE}
 devtools::install_github("peterbat1/processALA")
@@ -37,18 +46,18 @@ library(processALA)
 The Atlas of Living Australia is many things:
 
 * A gateway to a comprehensive collection of occurrence records of many types including herbarium records from Australia and New Zealand supplied by Australia's Virtual Herbarium (which is hosted by ALA)
-* The source of an accepted National Species List, and repository of taxonomic and nomeclatural information which for plants is formed by the Australian Plant Name Index (APNI) and the Australian Plant Census (APC) hosted by ALA on behalf of the Council of Heads of Australasian Herbaria (CHAH)
+* The source of an accepted National Species List, and repository of taxonomic and nomenclatural information which for plants is formed by the Australian Plant Name Index (APNI) and the Australian Plant Census (APC) hosted by ALA on behalf of the Council of Heads of Australasian Herbaria (CHAH)
 * The Australian node of the Global Biodiversity Information Facility (GBIF)
 
 ALA is an important source of occurrence data and taxonomic information which can be accessed through a web interface. However, for many researchers this can be cumbersome, particularly when many taxa must be processed. Fortunately ALA also provides an API or Application Programming Interface which lets you perform searches and retrieve records using scripts. This makes it easier to process lists of taxa or make periodic updates of information. You can find out more about the ALA API [here](https://api.ala.org.au).
 
-ALA also maintains an _**R**_-package, **ALA4R**, to make it very easy to use the ALA API. The functions within this package allow us to make use of the API without having to learn the ins and outs of composing query strings and the application of web access tools such as curl and wget. (Of course, if you're into such things there are fun times ahead for you if you want to work directly with curl or wget calls.)
+ALA also maintains an _**R**_-package, **ALA4R**, to make it very easy to use the ALA API. The functions within this package allow us to make use of the API without having to learn the ins and outs of composing query strings and the application of web access tools such as _curl_ and _wget_. (Of course, if you're into such things there are fun times ahead for you if you want to work directly with curl or wget calls.)
 
-The package **processALA** adds another level of refinement. It highly automates key steps in the retrieval and processing of ALA data by utlising a few key functions in the ALA4R package.
+The package **processALA** adds another level of refinement. It highly automates key steps in the retrieval and processing of ALA data by utilising a few key functions in the ALA4R package and adds functions to assist in data cleaning.
 
 There are three stages to obtaining occurrence data from ALA:
 
-* resolve your taxa to those available on the National Species List
+* resolving your taxa to those available on the National Species List
 * downloading occurrence data
 * cleaning occurrence data
 
@@ -62,7 +71,7 @@ The focus of this vignette is to guide you in applying them to fetching occurren
 
 ## Handling taxonomic names
 
-The ALA API provides a number of functions which allow you to interogate APNI and APC to resolve plant names to a matching accepted name from APC. Two functions in AL4R, _search_names()_ and _species_info()_ are available to determine the status of a name and provide details associated with it. The **processALA** function _checkTaxonName()_ uses them to check a name you have supplied and return a subset information of value for further processing of records.
+The ALA API provides a number of functions which allow you to interrogate APNI and APC to resolve plant names to a matching accepted name from APC. Two functions in AL4R, _search_names()_ and _species_info()_ are available to determine the status of a name and provide details associated with it. The **processALA** function _checkTaxonName()_ uses them to check a name you have supplied and return a subset information useful for further processing of records.
 
 Steps to checking a name include:
 
@@ -99,9 +108,9 @@ A name is "valid" in the sense used for **processALA** when it is found in an AP
 
 isValid | isAccepted | Meaning
 --------|------------|----------
-FALSE | FALSE | You have found nothing matching any name listed in APNI and, naturally, there is no corresponding accepted name in APC
-TRUE  | FALSE | Your search name is listed in APNI but it is not the accepted name for the taxon according to APC. The corresponding APC accepted name will be shown in _acceptedName_. Your search name will be shown as a synonym of the accepted name in the field _synonyms_.
-TRUE | TRUE | Congratulations! The name you searched for is listed in APNI and is the accepted name according  to APC. In this case, _searchName_ and _acceptedName_ will be identical
+FALSE | FALSE | You have found nothing matching any name listed in APNI and, naturally, there is no corresponding accepted name in APC.
+TRUE  | FALSE | Your search name is listed in APNI but it is not the accepted name for the taxon according to APC. The corresponding APC accepted name will be shown in the _acceptedName_ column of the result. Your search name will be shown as a synonym of the accepted name in the field _synonyms_.
+TRUE | TRUE | Congratulations! The name you searched for is listed in APNI and is the accepted name according  to APC. In this case, _searchName_ and _acceptedName_ will be identical.
 
 Here are some quick examples of each state:
 
@@ -126,7 +135,7 @@ Hopefully you can see the potential for using the information returned by _check
 
 The next step is downloading occurrence data for an accepted taxonomic name. This is performed by the function _fetchALAdata()_ which uses the function _occurrences()_ in the package **ALA4R**. Note that the parameter _doNameCheck_ is by default set to TRUE so that a name check is performed before attempting a data download. However, if a prior call has been made to _checkTaxonName()_, then this parameter may be set to FALSE and so some small quantum of time may be saved.
 
-The ALA4R function _occurrences()_ returns a list with two elements _meta_ (metadata about the data providers whose records are present in the download) and _data_ which is the table of occurrence data. Both are data.frames. _fetchALAdata()_ saves each in the specified output folder using the following naming convention: _meta_ is saved as "Genus_speciesEpithet_metadata.csv" and _data_ is saved as "Genus_specificEpithet.csv".
+The ALA4R function _occurrences()_ returns a list with two elements _meta_ (metadata about the data providers whose records are present in the download) and _data_ which is the table of occurrence data. Both are standard _**R**_ data.frames. _fetchALAdata()_ saves each in the specified output folder using the following naming convention: _meta_ is saved as "Genus_speciesEpithet_metadata.csv" and _data_ is saved as "Genus_specificEpithet.csv".
 
 Within the raw data table maybe found occurrence records for several record types which are indicated in the field _basisOfRecord_. The record types include the following:
 
@@ -134,18 +143,18 @@ basisOfRecord | Interpretation
 --------------|-----------------
 PreservedSpecimen | Herbarium records passed into ALA from the consortium of herbaria and museums which supply data to AVH 
 HumanObservation | Human observations which means any record of species occurrence arising from field encounters or observations which did not result in a voucher specimen being lodged in an herbarium. Examples include casual observations by the general public (also sometimes referred to as 'incidental observations'), and data from systematic vegetation surveys. 
-Image | An image of a species which is supplied with geo-coordinates. There are typically few of these encoutnered in most data downloads.
-LivingSpecimen | A form of human observation or incidental observation.
-<empty> | A small fraction of records have the basisOfRecord field empty
+Image | An image of a species which is supplied with geo-coordinates. There are typically few of these encountered in most data downloads.
+LivingSpecimen | A form of human observation or incidental observation referring to a specimen in a living collection such as a botanic garden or arboretum.
+<empty> | A small fraction of records have the basisOfRecord field empty!
 The element _data_ represents **raw** ALA occurrence data which must be cleaned or filtered before it may be used. However, one preliminary step which _fetchALAdata()_ performs is to split three data types out from the raw data table and place them into separate csv-formatted files.
 
-The first is the PreservedSpecimen records which are saved in a file named "Genus_species_herbariumRecords.csv". Second, HumanObservation records are palced in a similarly named file, "Genus_specificEpithet_humanObservations.csv". Finally, HumanObservation records are parsed to identify records generated by surveys forming part of the NSW Vegetation Information System (VIS). If any are found, they are saved as "Genus_specificEpithet_surveyRecords.csv". Note that these data will also be present in the human observation data.
+The first is the _PreservedSpecimen_ records which are saved in a file named "Genus_species_herbariumRecords.csv". Second, _HumanObservation_ records are placed in a similarly named file, "Genus_specificEpithet_humanObservations.csv". Finally, _HumanObservation_ records are parsed to identify records generated by surveys forming part of the NSW Vegetation Information System (VIS). If any are found, they are saved as "Genus_specificEpithet_surveyRecords.csv". Note that these data will also be present in the human observation data.
 
-As a final point, note that image and living specimen data are not currently extracted and saved. These data are however present in the raw data csv file and you may therefore use an R-script or spreadsheet program (Excel or LibreOffice Calc) to extract them if you need access to them.
+As a final point, note that image and living specimen data are not currently extracted and saved. These data are however present in the raw data csv file and you may therefore use an _**R**_-script or spreadsheet program (Excel, or LibreOffice Calc on the Linux PCs) to extract them if you need access to them.
 
 ## Filtering/cleaning ALA data
 
-ALA data is _**dirty**_ data! ALA is just a data aggregation service and web portal transmitting the data as received from data providers. ALA does perform data quality checks and flags as many possible errors as it can, but the data remain as supplied and so includes a range of errors. It is up to the end users to either use the quality flags raised by ALA or, preferrably, do additional checks to arrive at the cleanest occurrence data possible.
+ALA data is _**dirty**_ data! ALA is just a data aggregation service and web portal transmitting the data as received from data providers. ALA does perform data quality checks and flags as many possible errors as it can, but the data remain as supplied and so includes a range of errors. It is up to the end users to either use the quality flags raised by ALA or, preferably, do additional checks to arrive at the cleanest occurrence data possible.
 
 > **It is absolutely essential that you perform data cleaning or filtering before using ALA occurrence data.**
 
@@ -162,15 +171,15 @@ We will take a quick look at each error type and then see how the function _filt
 Location errors are caused by several conditions:
 
 * missing geo-coordinates (lat/longs)
-* inaccurate geo-coordinates: poor data recording by field collectors, data entry errors and, for very old records, imprecise location descriptions which cannot be interpeted to derive meaningful geo-coordinates
+* inaccurate geo-coordinates: poor data recording by field collectors, data entry errors and, for very old records, imprecise location descriptions which cannot be interpreted to derive meaningful geo-coordinates
 
 Location accuracy and record completeness has improved greatly in recent years and is particularly good from around 2000 onwards with the increasing use of GPS technology. There is clearly a temporal dimension to geo-coordinate data quality - older records have higher missing coordinate rates and lower accuracy.
 
 _filterALAdata()_ filters missing coordinates by default (i.e. the parameter _removeMissingCoordinates_ = TRUE by default).
 
-A further level of filtering location errors is achieved by calling _filterALAdata()_ with the parameter _filterByJurisdiction_ = TRUE (which is the default). When set, this will cause _filterALAdata()_ to use the **processALA** function _fetchJurisdictionInfo()_ to ask ALA for a list of Australian states and territories in which the taxon is found. Records which fall in a state or territory which is _not_ expected is removed. Any record falling outside Australia (either because it is an herbarium specimen in an Australian herbarium collection but collected outside Australia, or because of a gross coordinate error leading to mid-ocean specimens of terrestrial species!) is also removed in this process.
+A further level of filtering location errors is achieved by calling _filterALAdata()_ with the parameter _filterByJurisdiction_ = TRUE (which is the default). When set, this will cause _filterALAdata()_ to use the **processALA** function _fetchJurisdictionInfo()_ to ask ALA for a list of Australian states and territories in which the taxon is found. Records which fall in a state or territory which is _not_ expected are removed. Any record falling outside Australia (either because it is an herbarium specimen in an Australian herbarium collection but collected outside Australia, or because of a gross coordinate error leading to mid-ocean specimens of terrestrial species!) is also removed in this process.
 
-A list of the states and territories included in _fetchJurisdictionInfo()_, and therfore used by _filterALAdata()_, is provided in the help page for _fetchJurisdictionInfo()_.
+A list of the states and territories included in _fetchJurisdictionInfo()_, and therefore used by _filterALAdata()_, is provided in the help page for _fetchJurisdictionInfo()_.
 
 ### Taxon ID errors
 
@@ -184,17 +193,19 @@ _filterALAdata()_ cannot deal directly with these residual taxonomic ID errors b
 
 ### Record type errors
 
-There are relatively few occurrence records in ALA raw data with bad record types but they do occur and typically generate wierd spatial outliers. In my experience, the most apparent record type error is caused by herbarium specimens from cultivated plants which are not correctly identified by ALA's automatic methods. ALA sets a flag in the database field _occCultivatedEscapee_ which appears to flow from a flag set by the AVH data aggregation process. However, a few data providers seem to be lax in their marking specimens taken from cultivated individuals - Canberra and Melbourne are the key offenders - and this requires a second pass over the data by the end user. This additional filter is supplied by _filterALAdata()_ by setting the parameter _filterCultivated_ to TRUE. This is the default setting for the function and removes any record where the term "CULTIVATED" appears in the _locality_ field.
+There are relatively few occurrence records in ALA raw data with bad record types but they do occur and typically generate weird spatial outliers. In my experience, the most apparent record type error is caused by herbarium specimens from cultivated plants which are not correctly identified by ALA's automatic methods.
+
+ALA sets a flag in the database field _occCultivatedEscapee_ which appears to flow from a flag set by the AVH data aggregation process. However, a few data providers seem to be lax in their marking of herbarium specimens taken from cultivated individuals - Canberra and Melbourne are the key offenders - and this requires a second pass over the data by the end user. This additional filter is supplied by _filterALAdata()_ by setting the parameter _filterCultivated_ to TRUE. This is the default setting for the function and removes any record where the term "CULTIVATED" appears in the _locality_ field.
 
 As noted, rogue herbarium specimens from cultivated individuals often show up as inexplicable extreme spatial outliers. This also frequently means they are removed by the jurisdication filter applied by default when you call _filterALAdata()_. Experience suggests that the combined effect of applying _filterCultivated_ = TRUE and _filterByJurisdiction_ = TRUE removes nearly all herbarium samples collected from cultivated plants.
 
 ## Worked example
 
-Here is a short script which can be a starting point for developing your own workflows. It first calls _checkTaxonName()_ to determine the status of the species name. Using this result, we determine which of the three states the result represents by comparing the flags _isValid _ and _isAccepted_ and take appropriate action.
+Here is a short script which can be a starting point for developing your own workflows. It first calls _checkTaxonName()_ to determine the status of the species name. Using this result, we determine which of the three states the result represents by comparing the flags _isValid _ and _isAccepted_, and taking appropriate action.
 
 > **Note that this script may take a minute or two to run as it fetches the occurrence data _live_ from ALA.**
 
-```{r}
+```{r eval=FALSE}
 library(ozmaps)
 
 # Example of an accepted name
@@ -214,7 +225,7 @@ if ((nameResult$isValid) && (nameResult$isAccepted))
   cat(thisTaxon, "is valid and accepted\n")
   # Taxon name is valid and accepted so full steam ahead...
   fetchALAdata(thisTaxon, doNameCheck = FALSE)
-
+  
   # Apply the default filter set on the downloaded data...
   filterALAdata(thisTaxon, recType = "herbarium", doNameCheck = FALSE)
 } else
@@ -233,9 +244,15 @@ if ((nameResult$isValid) && (nameResult$isAccepted))
   }
 }
 
-# Make a map
-d <- read.csv(paste0(defaultOutputFolder, "/", thisTaxon, "/", gsub(" ", "_", thisTaxon, fixed = TRUE), "_herbariumRecords_filtered.csv"))
+herbDataFile <- paste0(defaultOutputFolder, "/", thisTaxon, "/", gsub(" ", "_", thisTaxon, fixed = TRUE), "_herbariumRecords_filtered.csv")
 
-oz()
-points(d$longitude, d$latitude, pch = 16, col = "darkorange")
+if (file.exists(herbDataFile))
+{
+  # Make a map
+  d <- read.csv(herbDataFile)
+  
+  oz()
+  points(d$longitude, d$latitude, pch = 16, col = "darkorange")
+}
 ```
+

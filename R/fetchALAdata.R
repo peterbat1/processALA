@@ -12,6 +12,7 @@
 #'
 #' @param taxonList A character vector holding a set of taxon names to be processed or "all" (default) which causes all taxa in the \emph{acceptedName} field of the R&R database \emph{taxonTable} to be downloaded.
 #' @param baseOutputPath Character string. A path to the base folder into which output will be written. An attempt will be made to create the path to the base folder if does not already exist. A sub-folder named for each taxon in taxonList will be created and dowloaded files written into it.
+#' @param theseFields Character vector. A set of ALA occurrence field names to be returned in the API 'GET' call. The default is a set suited to post-processing of plant occurrence records. See Details below.
 #' @param doNameCheck Logical. Should a check of taxonomic names be performed? Default is TRUE; if FALSE, then it is assumed that names are valid and accepted as reported by \code{\link{checkTaxonName}}
 #' @param verbose Logical. Should additional progress messages be produced?
 #' @return None
@@ -25,6 +26,10 @@
 #' \item raw NSW Vegetation Survey data (extracted from the human observation records using a cunning bit of jiggery-pokery)}
 #'
 #' These files can be used for whatever purpose you have mind, or they can be passed through the companion function \code{\link{filterALAdata}} to make a first pass at cleaning the data. Let me perfectly frank, \emph{ALA data is full of detritus and needs to be thoroughly cleaned before use!}
+#'
+#' Occurrence fields: The parameter \emph{theseFields} allows you to specify the occurrence fields to be supplied in the resulting data table. The default is set to a list of fields which have proven useful in post-processing plant occurrence records. The list of available fields is long and includes many options which you may wish to use in your own spin on filtering and processing the resulting data table.
+#'
+#' See help for \link{showOccFields} for information on available fields and their definitions.
 #' }
 #' @examples
 #' \dontrun{
@@ -35,7 +40,8 @@
 #'  fetchALAdata(c("Acacia linifolia","Wilkiea hugeliana","Banksia ericifolia","Angophora costata"),
 #'               baseOutpath = "/home/peterw/Restore and Renew/newData/")}
 
-fetchALAdata <- function(taxonList = NULL, baseOutputPath = defaultOutputFolder, doNameCheck = TRUE, verbose = FALSE)
+fetchALAdata <- function(taxonList = NULL, baseOutputPath = defaultOutputFolder,
+                         theseFields = stdFields, doNameCheck = TRUE, verbose = FALSE)
 {
   #ALA4R::ala_config(caching = "off", cache_directory="~/Downloads/ALA_cache")
 
@@ -48,16 +54,6 @@ fetchALAdata <- function(taxonList = NULL, baseOutputPath = defaultOutputFolder,
     stop("A value for 'baseOutputPath' is required.")
 
   cat("Fetch ALA occurrence data for a set of species\n==============================================\n")
-
-  #baseURL <- "https://biocache-ws.ala.org.au/ws/occurrences/index/download?q="
-
-  #fieldSet <- "uuid,catalogue_number,scientificName.p,institution_code,collection_code,collection_name,latitude,longitude,coordinate_uncertainty,collectors,month.p,year.p,basis_of_record,raw_locality,data_provider,dataset_name"
-  theseFields <- "id,catalogue_number,taxon_name,institution_code,collection_code,collection_name,latitude,longitude,coordinate_uncertainty,collector,month,year,basis_of_record,raw_location_remarks,data_provider,dataset_name"
-
-
-  ############# Run check of taxonList entries against ALA; report bad names, advise user to check/correct/re-run and stop
-  ############# theTaxa will stored accepted names ?and GUIDS, synonyms, etc
-
 
   cat("  Fetching data for", length(taxonList), "taxa\n")
 
@@ -97,14 +93,13 @@ fetchALAdata <- function(taxonList = NULL, baseOutputPath = defaultOutputFolder,
 
     destFile <- paste0(destFolder, "/", this_Taxon, ".csv")
     meta_destFile <- paste0(destFolder, "/", this_Taxon, "_metadata.csv")
-    theseFields <- unlist(strsplit("id,catalogue_number,taxon_name,institution_code,collection_code,collection_name,latitude,longitude,coordinate_uncertainty,collector,month,year,basis_of_record,verbatim_locality,data_provider,dataset_name", ","))
-    # theseFields <- "id, catalogue_number"
+    #theseFields <- unlist(strsplit("id,catalogue_number,taxon_name,institution_code,collection_code,collection_name,latitude,longitude,coordinate_uncertainty,collector,month,year,basis_of_record,verbatim_locality,data_provider,dataset_name", ","))
 
     ans <- ALA4R::occurrences(taxon = thisTaxon,
                               fields = theseFields,
                               download_reason_id = 4,
                               email = "peterdonaldlwilson@gmail.com",
-                              #verbose = verbose,
+                              verbose = verbose,
                               use_data_table = FALSE)
 
     write.csv(ans$data, destFile, row.names = FALSE)
