@@ -10,10 +10,10 @@
 #'
 #' Download records from the ALA database using API calls. For each taxon, four files are written: the raw ALA data, and a file for each of herbarium, human observation and NSW survey records.
 #'
-#' @param taxonList A character vector holding a set of taxon names to be processed or "all" (default) which causes all taxa in the \emph{acceptedName} field of the R&R database \emph{taxonTable} to be downloaded.
+#' @param taxonList A character vector holding a set of taxon names to be processed.
 #' @param baseOutputPath Character string. A path to the base folder into which output will be written. An attempt will be made to create the path to the base folder if does not already exist. A sub-folder named for each taxon in taxonList will be created and dowloaded files written into it.
 #' @param theseFields Character vector. A set of ALA occurrence field names to be returned in the API 'GET' call. The default is a set suited to post-processing of plant occurrence records. See Details below.
-#' @param doNameCheck Logical. Should a check of taxonomic names be performed? Default is TRUE; if FALSE, then it is assumed that names are valid and accepted as reported by \code{\link{checkTaxonName}}
+#' @param doNameCheck Logical. Should a check of taxonomic names be performed? Default is TRUE; if FALSE, then it is assumed that names are valid and accepted as reported by \code{\link{checkTaxonName}}.
 #' @param verbose Logical. Should additional progress messages be produced?
 #' @return None
 #' @export

@@ -13,13 +13,13 @@ fetchALAdata(
 )
 }
 \arguments{
-\item{taxonList}{A character vector holding a set of taxon names to be processed or "all" (default) which causes all taxa in the \emph{acceptedName} field of the R&R database \emph{taxonTable} to be downloaded.}
+\item{taxonList}{A character vector holding a set of taxon names to be processed.}
 
 \item{baseOutputPath}{Character string. A path to the base folder into which output will be written. An attempt will be made to create the path to the base folder if does not already exist. A sub-folder named for each taxon in taxonList will be created and dowloaded files written into it.}
 
 \item{theseFields}{Character vector. A set of ALA occurrence field names to be returned in the API 'GET' call. The default is a set suited to post-processing of plant occurrence records. See Details below.}
 
-\item{doNameCheck}{Logical. Should a check of taxonomic names be performed? Default is TRUE; if FALSE, then it is assumed that names are valid and accepted as reported by \code{\link{checkTaxonName}}}
+\item{doNameCheck}{Logical. Should a check of taxonomic names be performed? Default is TRUE; if FALSE, then it is assumed that names are valid and accepted as reported by \code{\link{checkTaxonName}}.}
 
 \item{verbose}{Logical. Should additional progress messages be produced?}
 }
