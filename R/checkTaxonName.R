@@ -101,7 +101,7 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = FALSE)
                                 fullAcceptedName = nameSearch$acceptedConceptName,
                                 acceptedGUID = unlist(lapply(nameSearch$acceptedConceptGuid, function(el){strsplit(el, "/")[[1]][6]})),
                                 acceptedFullGUID = nameSearch$acceptedConceptGuid,
-                                formattedAcceptedName = paste0("<i>", as.character(speciesInfo$taxonConcept$nameString), "</i> ", as.character(speciesInfo$taxonConcept$author)),
+                                formattedAcceptedName = formatTaxonName(speciesInfo$taxonConcept$nameFormatted),
                                 genus = nameParts["genus"],
                                 species = nameParts["species"],
                                 infraSpecificRank = nameParts["infraRank"],
@@ -154,7 +154,7 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = FALSE)
         taxonAuthor <- as.character(speciesInfo$taxonConcept$author)
         acceptedGUID <- unlist(lapply(as.character(speciesInfo$taxonConcept$guid), function(el){strsplit(el, "/")[[1]][6]}))
         acceptedFullGUID <- as.character(speciesInfo$taxonConcept$guid)
-        formattedAcceptedName <- paste0("<i>", as.character(speciesInfo$taxonConcept$nameString), "</i> ", as.character(speciesInfo$taxonConcept$author))
+        formattedAcceptedName <- formatTaxonName(speciesInfo$taxonConcept$nameFormatted)
         taxonRank <- as.character(speciesInfo$taxonConcept$rank)
         parentGUID <- ifelse(nameSearch$rank == "subspecies",
                              as.character(speciesInfo$classification$speciesGuid),
