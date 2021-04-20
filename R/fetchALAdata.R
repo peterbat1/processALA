@@ -95,7 +95,7 @@ fetchALAdata <- function(taxonList = NULL, baseOutputPath = defaultOutputFolder,
     meta_destFile <- paste0(destFolder, "/", this_Taxon, "_metadata.csv")
     #theseFields <- unlist(strsplit("id,catalogue_number,taxon_name,institution_code,collection_code,collection_name,latitude,longitude,coordinate_uncertainty,collector,month,year,basis_of_record,verbatim_locality,data_provider,dataset_name", ","))
 
-    ans <- ALA4R::occurrences(taxon = paste0("'",thisTaxon,"'"),
+    ans <- ALA4R::occurrences(taxon = paste0("\"",thisTaxon,"\""),
                               fields = theseFields,
                               download_reason_id = 4,
                               email = "peterdonaldwilson@gmail.com",
