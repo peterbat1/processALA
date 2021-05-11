@@ -183,9 +183,13 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = FALSE)
 
             synonyms <- paste(unique(as.character(retainedEntries[, "nameString"])), collapse = ";")
           }
+          else
+          {
+            synonyms <- "none"
+          }
         }
         else
-          synonyms <- ""
+          synonyms <- "none"
 
         infraRank <- switch(as.character(speciesInfo$taxonConcept[1, "rank"]), species = "sp.", subspecies = "subsp.", variety = "var.", form = "f.")
 
