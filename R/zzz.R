@@ -17,5 +17,4 @@
                    "collection_name", "latitude", "longitude", "coordinate_uncertainty", "collector",
                    "month", "year", "basis_of_record", "verbatim_locality", "data_provider",
                    "dataset_name")
-
 }
