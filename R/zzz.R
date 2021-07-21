@@ -19,7 +19,7 @@
   #                  "dataset_name")
 
   stdFields <<-  c("id", "catalogNumber", "scientificName", "institutionCode", "collectionCode",
-                   "collectionName", "latitude", "longitude", "coordinateUncertaintyInMeters", "recordedBy",
+                   "collectionName", "decimalLatitude", "decimalLongitude", "coordinateUncertaintyInMeters", "recordedBy",
                    "month", "year", "basisOfRecord", "verbatimLocality", "dataProviderName",
                    "datasetName")
 }
