@@ -168,8 +168,10 @@ filterALAdata <- function(taxa = NULL,
 
       if (grepl(toupper(recType), "SURVEYRECORDS"))
       {
+        theRecords <- theRecords[grep("SURVEY", toupper(theRecords$datasetName))]
+
         if (trace) cat(" Found", nrow(theRecords), "NSW veg. survey records.\n")
-        if (nrow(theRecords) == 0) stop("No human observation records in the data passed in 'theRecords'")
+        if (nrow(theRecords) == 0) stop("No survey records in the data passed in 'theRecords'")
       }
 
       if (filterCultivated)
