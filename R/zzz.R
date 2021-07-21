@@ -18,8 +18,8 @@
   #                  "month", "year", "basis_of_record", "verbatim_locality", "data_provider",
   #                  "dataset_name")
 
-  stdFields <<-  c("id", "catalogueNumber", "scientificName", "institutionCode", "collectionCode",
-                   "collectionName", "latitude", "longitude", "coordinateUncertaintyInMeters", "collector",
+  stdFields <<-  c("id", "catalogNumber", "scientificName", "institutionCode", "collectionCode",
+                   "collectionName", "latitude", "longitude", "coordinateUncertaintyInMeters", "recordedBy",
                    "month", "year", "basisOfRecord", "verbatimLocality", "dataProviderName",
                    "datasetName")
 }
