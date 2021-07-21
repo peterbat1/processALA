@@ -13,8 +13,13 @@
     defaultOutputFolder <<- paste0("C:/Users/", systemInfo["user"], "/Downloads/ALA_dump")
   }
 
-  stdFields <<-  c("id", "catalogue_number", "taxon_name", "institution_code", "collection_code",
-                   "collection_name", "latitude", "longitude", "coordinate_uncertainty", "collector",
-                   "month", "year", "basis_of_record", "verbatim_locality", "data_provider",
-                   "dataset_name")
+  # stdFields <<-  c("id", "catalogue_number", "taxon_name", "institution_code", "collection_code",
+  #                  "collection_name", "latitude", "longitude", "coordinate_uncertainty", "collector",
+  #                  "month", "year", "basis_of_record", "verbatim_locality", "data_provider",
+  #                  "dataset_name")
+
+  stdFields <<-  c("id", "catalogueNumber", "scientificName", "institutionCode", "collectionCode",
+                   "collectionName", "latitude", "longitude", "coordinateUncertaintyInMeters", "collector",
+                   "month", "year", "basisOfRecord", "verbatimLocality", "dataProviderName",
+                   "datasetName")
 }
