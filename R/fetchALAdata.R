@@ -96,7 +96,7 @@ fetchALAdata <- function(taxonList = NULL, baseOutputPath = defaultOutputFolder,
     #theseFields <- unlist(strsplit("id,catalogue_number,taxon_name,institution_code,collection_code,collection_name,latitude,longitude,coordinate_uncertainty,collector,month,year,basis_of_record,verbatim_locality,data_provider,dataset_name", ","))
 
     ans <- ALA4R::occurrences(taxon = paste0("\"",thisTaxon,"\""),
-                              fields = theseFields,
+                              fields = stdFields, #theseFields,
                               download_reason_id = 4,
                               email = "peterdonaldwilson@gmail.com",
                               verbose = verbose,
@@ -122,7 +122,7 @@ fetchALAdata <- function(taxonList = NULL, baseOutputPath = defaultOutputFolder,
     }
 
     # Select HumanObservations
-    ansHumanObs <- subset(ans$data, ans$data$dataProvider != "Australia's Virtual Herbarium")
+    ansHumanObs <- subset(ans$data, ans$data$dataProviderName != "Australia's Virtual Herbarium")
 
     if (nrow(ansHumanObs) > 0)
     {
@@ -141,7 +141,7 @@ fetchALAdata <- function(taxonList = NULL, baseOutputPath = defaultOutputFolder,
     {
       ansSurvey <- ansSurvey[surveyInd, ]
       outFile <- paste0(gsub("//", "/", file.path(baseOutputPath, thisTaxon)), "/", this_Taxon, "_surveyRecords.csv")
-      write.csv(ansHumanObs, outFile, row.names = FALSE)
+      write.csv(ansSurvey, outFile, row.names = FALSE)
       if (verbose) cat("        ", nrow(ansSurvey), "NSW Veg Survey records found and extracted\n")
     }
   }
