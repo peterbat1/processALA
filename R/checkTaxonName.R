@@ -267,23 +267,6 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
           nameParts <- taxonNameParts(as.character(speciesInfo$taxonConcept$nameString)) #, verbose = !quiet)
         }
 
-        print("=============================================")
-        print(acceptedName)
-        print(fullAcceptedName)
-        print(nameParts["genus"])
-        print(nameParts["species"])
-        print(nameParts["infraRank"])
-        print(nameParts["infraName"])
-        print(taxonAuthor)
-        print(acceptedGUID)
-        print(formattedAcceptedName)
-        print(taxonRank)
-        print(taxonStatus)
-        print(parentGUID)
-        print(parentTaxonomicRank)
-        print(synonyms)
-        print(apcFamily)
-
         checkResult <- data.frame(isValid = TRUE,
                                   isAccepted = TRUE,
                                   searchName = thisTaxon,
