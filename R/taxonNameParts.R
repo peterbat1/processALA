@@ -21,7 +21,7 @@ taxonNameParts <- function(taxonName, verbose = FALSE)
 {
   if (verbose) cat("  taxonNameParts called with taxonName =", taxonName, "\n")
 
-  # Set-up a strucuture to hold results of the parse step. Note that ans[2] <-
+  # Set-up a structure to hold results of the parse step. Note that ans[2] <-
   # "sp." so that when a genus name is parsed we will return "Agenus sp."
   ans <- c("No_data", "sp.", "No_data", "No_data")
   names(ans) <- c("genus", "species", "infraRank", "infraName")
@@ -29,9 +29,19 @@ taxonNameParts <- function(taxonName, verbose = FALSE)
   bits <- unlist(strsplit(taxonName, " ", fixed = TRUE))
   if(verbose) print(bits)
 
+  # Did we split an 'x' name?
   if (bits[2] == "x")
   {
     bits[2] <- paste(bits[2], bits[3], bits[4])
+    bits[3] <- ""
+    bits[4] <- ""
+  }
+
+  # Did we split a hyphenated cultivar name?
+  hyphenInd <- grep("'", bits)
+  if (length(hyphenInd) > 0)
+  {
+    bits[2] <- paste(bits[hyphenInd], collapse = " ")
     bits[3] <- ""
     bits[4] <- ""
   }
