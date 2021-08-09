@@ -29,6 +29,13 @@ taxonNameParts <- function(taxonName, verbose = FALSE)
   bits <- unlist(strsplit(taxonName, " ", fixed = TRUE))
   if(verbose) print(bits)
 
+  if (bits[2] == "x")
+  {
+    bits[2] <- paste(bits[2], bits[3], bits[4])
+    bits[3] <- ""
+    bits[4] <- ""
+  }
+
   for (i in 1:length(bits))
     ans[i] <- bits[i]
 

@@ -4,7 +4,7 @@
 \alias{checkTaxonName}
 \title{Check a taxon name against the National Species List maintained by ALA}
 \usage{
-checkTaxonName(thisTaxon = NULL, quiet = FALSE)
+checkTaxonName(thisTaxon = NULL, quiet = TRUE)
 }
 \arguments{
 \item{thisTaxon}{Character object holding the name for which a search is to be made.}

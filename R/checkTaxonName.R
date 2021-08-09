@@ -26,28 +26,28 @@
 #'
 #' @examples
 #' \dontrun{}
-checkTaxonName <- function(thisTaxon = NULL, quiet = FALSE)
+checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
 {
   #ALA4R::ala_config(caching = "off")
 
   if (is.null(thisTaxon))
     stop("'thisTaxon' cannot be NULL: please supply a taxonomic name")
 
-  if (quiet) cat("Checking taxon name:",thisTaxon,"\n")
+  if (!quiet) cat("Checking taxon name:",thisTaxon,"\n")
 
   # From this point on, make sure that references to genera are without a
   # trailing "sp." as this can lead to unexpected returns from name searches,
   # whereas searches on the pure genus name will always return clean results
   thisTaxon <- trimws(sub("sp.$", "", trimws(thisTaxon)))
 
-  if (quiet) cat("  no match in taxonTable synonyms\n  checking APNI for matching names\n")
+  if (!quiet) cat("  no match in taxonTable synonyms\n  checking APNI for matching names\n")
   nameSearch <- ALA4R::search_names(thisTaxon, output_format = "complete")
 
 
   if (is.na(nameSearch$guid))
   {
     # Name is completely unknown to APNI so return a "Not_accepted" status
-    if (quiet) cat("  APNI returned a negative result\n")
+    if (!quiet) cat("  APNI returned a negative result\n")
     #thisStatus <- "Not_accepted"
     checkResult <- data.frame(isValid = FALSE,
                               isAccepted = FALSE,
@@ -109,59 +109,89 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = FALSE)
     else
     {
       # We have something to grapple further with
-      if (quiet) cat("  APNI says the name is known\n")
+      if (!quiet) cat("  APNI says the name is known\n")
       # Is thisTaxon a synonym of an APC accepted species concept?
       if (nameSearch[1, "name"] != nameSearch[1, "acceptedConceptName"])
       {
-        if (quiet) cat("  APNI says search name is a synonym of another taxon concept\n")
+        if (!quiet) cat("  APNI says search name is a synonym of another taxon concept\n")
         speciesInfo <- ALA4R::species_info(guid = nameSearch[1, "acceptedConceptGuid"])
 
-        if (nrow(speciesInfo$synonyms) > 0)
+        if ((speciesInfo$taxonConcept$taxonomicStatus == "excluded") | (speciesInfo$taxonConcept$nomenclaturalStatus == "nom. illeg."))
         {
-          retainedEntries <- grep("SYNONYM", toupper(speciesInfo$synonyms$taxonomicStatus))
-          tmpStr <- as.character(speciesInfo$synonyms[, "nameString"])[retainedEntries]
-          synonyms <- paste(tmpStr, collapse = ";")
+          if (!quiet) cat("  APNI says search name is 'excluded' and/or 'nom. illeg.'")
+
+          checkResult <- data.frame(isValid = FALSE,
+                                    isAccepted = FALSE,
+                                    searchName = thisTaxon,
+                                    acceptedName = "Not_accepted",
+                                    fullAcceptedName = "Not_accepted",
+                                    genus = "No_data",
+                                    species = "No_data",
+                                    infraSpecificRank = "No_data",
+                                    infraSpecificEpithet = "No_data",
+                                    taxonAuthor = "No_data",
+                                    acceptedGUID = "Not_accepted",
+                                    acceptedFullGUID = "Not_accepted",
+                                    formattedAcceptedName = "No_data",
+                                    taxonomicRank = nameSearch$rank,
+                                    taxonomicStatus = speciesInfo$taxonConcept$taxonomicStatus,
+                                    parentGUID = speciesInfo$taxonConcept$parentGuid,
+                                    parentName = "No_data",
+                                    parentTaxonomicRank = "No_data",
+                                    synonyms = "No_data",
+                                    apcFamily = "No_data",
+                                    stringsAsFactors = FALSE)
+          class(checkResult) <- c(class(checkResult), "taxonInfo")
         }
         else
-          synonyms <- "none"
+        {
+          if (nrow(speciesInfo$synonyms) > 0)
+          {
+            retainedEntries <- grep("SYNONYM", toupper(speciesInfo$synonyms$taxonomicStatus))
+            tmpStr <- as.character(speciesInfo$synonyms[, "nameString"])[retainedEntries]
+            synonyms <- paste(tmpStr, collapse = ";")
+          }
+          else
+            synonyms <- "none"
 
-        if (as.character(speciesInfo$taxonConcept[1, "rank"]) == "subspecies")
-          infraRank <- "subsp."
+          if (as.character(speciesInfo$taxonConcept[1, "rank"]) == "subspecies")
+            infraRank <- "subsp."
 
-        nameParts <- taxonNameParts(as.character(speciesInfo$taxonConcept$nameString), verbose = quiet)
+          nameParts <- taxonNameParts(as.character(speciesInfo$taxonConcept$nameString), verbose = quiet)
 
-        checkResult <- data.frame(isValid = TRUE,
-                                  isAccepted = FALSE,
-                                  searchName = thisTaxon,
-                                  acceptedName = as.character(speciesInfo$taxonConcept$nameString),
-                                  fullAcceptedName = nameSearch$acceptedConceptName,
-                                  acceptedGUID = unlist(lapply(nameSearch$acceptedConceptGuid, function(el){strsplit(el, "/")[[1]][6]})),
-                                  acceptedFullGUID = nameSearch$acceptedConceptGuid,
-                                  formattedAcceptedName = formatTaxonName(speciesInfo$taxonConcept$nameFormatted),
-                                  genus = nameParts["genus"],
-                                  species = nameParts["species"],
-                                  infraSpecificRank = nameParts["infraRank"],
-                                  infraSpecificEpithet = nameParts["infraName"],
-                                  taxonAuthor = speciesInfo$taxonConcept$author,
-                                  taxonomicRank = nameSearch$rank,
-                                  taxonomicStatus = nameSearch$taxonomicStatus,
-                                  parentGUID = as.character(speciesInfo$taxonConcept$parentGuid),
-                                  parentName = speciesInfo$classification$genus,
-                                  parentTaxonomicRank = "genus",
-                                  synonyms = synonyms,
-                                  apcFamily = speciesInfo$classification$family,
-                                  stringsAsFactors = FALSE)
-        class(checkResult) <- c(class(checkResult), "taxonInfo")
+          checkResult <- data.frame(isValid = TRUE,
+                                    isAccepted = FALSE,
+                                    searchName = thisTaxon,
+                                    acceptedName = as.character(speciesInfo$taxonConcept$nameString),
+                                    fullAcceptedName = nameSearch$acceptedConceptName,
+                                    acceptedGUID = unlist(lapply(nameSearch$acceptedConceptGuid, function(el){strsplit(el, "/")[[1]][6]})),
+                                    acceptedFullGUID = nameSearch$acceptedConceptGuid,
+                                    formattedAcceptedName = formatTaxonName(speciesInfo$taxonConcept$nameFormatted),
+                                    genus = nameParts["genus"],
+                                    species = nameParts["species"],
+                                    infraSpecificRank = nameParts["infraRank"],
+                                    infraSpecificEpithet = nameParts["infraName"],
+                                    taxonAuthor = speciesInfo$taxonConcept$author,
+                                    taxonomicRank = nameSearch$rank,
+                                    taxonomicStatus = nameSearch$taxonomicStatus,
+                                    parentGUID = as.character(speciesInfo$taxonConcept$parentGuid),
+                                    parentName = speciesInfo$classification$genus,
+                                    parentTaxonomicRank = "genus",
+                                    synonyms = synonyms,
+                                    apcFamily = speciesInfo$classification$family,
+                                    stringsAsFactors = FALSE)
+          class(checkResult) <- c(class(checkResult), "taxonInfo")
+        }
       }
       else
       {
         # Assume now that we have a valid name
-        if (quiet) cat("  APNI says search name is an accepted concept\n")
+        if (!quiet) cat("  APNI says search name is an accepted concept\n")
         speciesInfo <- ALA4R::species_info(nameSearch[1, "acceptedConceptName"])
 
         if (length(speciesInfo) == 0) # We have one of those times when species_info() fails!
         {                             # So use info in nameSearch to set values
-          if (quiet) cat("    species_info() call failed: using nameSearch result\n")
+          if (!quiet) cat("    species_info() call failed: using nameSearch result\n")
           acceptedName <- nameSearch$name
           fullAcceptedName <- nameSearch$nameComplete
           formattedAcceptedName <- "" ########### NEED TO FIX AND MAKE IT DO SUBSP. ditto using species_info() below
@@ -185,7 +215,7 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = FALSE)
         }
         else
         {
-          if (quiet) cat("    species_info() call was successful\n")
+          if (!quiet) cat("    species_info() call was successful\n")
           acceptedName <- as.character(speciesInfo$taxonConcept$nameString)
           fullAcceptedName <- as.character(speciesInfo$taxonConcept$nameComplete)
           taxonAuthor <- as.character(speciesInfo$taxonConcept$author)
@@ -230,7 +260,7 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = FALSE)
 
           infraRank <- switch(as.character(speciesInfo$taxonConcept[1, "rank"]), species = "sp.", subspecies = "subsp.", variety = "var.", form = "f.")
 
-          nameParts <- taxonNameParts(as.character(speciesInfo$taxonConcept$nameString), verbose = quiet)
+          nameParts <- taxonNameParts(as.character(speciesInfo$taxonConcept$nameString), verbose = !quiet)
         }
 
         checkResult <- data.frame(isValid = TRUE,
