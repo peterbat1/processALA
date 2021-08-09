@@ -29,21 +29,24 @@ taxonNameParts <- function(taxonName, verbose = FALSE)
   bits <- unlist(strsplit(taxonName, " ", fixed = TRUE))
   if(verbose) print(bits)
 
-  # Did we split an 'x' name?
-  if (bits[2] == "x")
+  if (bits[2] != "sp.")
   {
-    bits[2] <- paste(bits[2], bits[3], bits[4])
-    bits[3] <- ""
-    bits[4] <- ""
-  }
+    # Did we split an 'x' name?
+    if (bits[2] == "x")
+    {
+      bits[2] <- paste(bits[2], bits[3], bits[4])
+      bits[3] <- ""
+      bits[4] <- ""
+    }
 
-  # Did we split a hyphenated cultivar name?
-  hyphenInd <- grep("'", bits)
-  if (length(hyphenInd) > 0)
-  {
-    bits[2] <- paste(bits[hyphenInd], collapse = " ")
-    bits[3] <- ""
-    bits[4] <- ""
+    # Did we split a hyphenated cultivar name?
+    hyphenInd <- grep("'", bits)
+    if (length(hyphenInd) > 0)
+    {
+      bits[2] <- paste(bits[hyphenInd], collapse = " ")
+      bits[3] <- ""
+      bits[4] <- ""
+    }
   }
 
   for (i in 1:length(bits))

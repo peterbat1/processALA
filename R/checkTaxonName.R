@@ -116,7 +116,7 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
         if (!quiet) cat("  APNI says search name is a synonym of another taxon concept\n")
         speciesInfo <- ALA4R::species_info(guid = nameSearch[1, "acceptedConceptGuid"])
 
-        if ((speciesInfo$taxonConcept$taxonomicStatus == "excluded") | (speciesInfo$taxonConcept$nomenclaturalStatus == "nom. illeg."))
+        if ((speciesInfo$taxonConcept$taxonomicStatus == "excluded")) # | (speciesInfo$taxonConcept$nomenclaturalStatus == "nom. illeg."))
         {
           if (!quiet) cat("  APNI says search name is 'excluded' and/or 'nom. illeg.'")
 
