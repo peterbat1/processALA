@@ -17,7 +17,7 @@ formatTaxonName <- function(thisNameStr)
 
   for (i in 1:length(xx))
   {
-    if (grepl("\"name\"", split2[[i]][1]))
+    if (grepl("\\name\\", split2[[i]][1], fixed = TRUE))
     {
       xx[i] <- paste0("<i>", split2[[i]][2], "</i>")
     }
@@ -29,13 +29,26 @@ formatTaxonName <- function(thisNameStr)
       }
       else
       {
-        if (grepl("\"author\"|\"rank\"", split2[[i]][1]))
+        if (grepl("\\author\\", split2[[i]][1], fixed = TRUE))
         {
           xx[i] <- split2[[i]][2]
         }
+        else
+        {
+          if ((grepl("\\rank\\", split2[[i]][1], fixed = TRUE)))
+          {
+            xx[i] <- split2[[i]][2]
+          }
+          else
+          {
+            if ((grepl("\\hybrid\\", split2[[i]][1], fixed = TRUE)))
+            {
+              xx[i] <- split2[[i]][2]
+            }
+          }
+        }
       }
     }
-
   }
 
   return(gsub("</i> <i>", " ", trimws(paste(xx, collapse = " ")), fixed = TRUE))

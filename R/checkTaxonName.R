@@ -223,6 +223,7 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
           acceptedFullGUID <- as.character(speciesInfo$taxonConcept$guid)
           formattedAcceptedName <- formatTaxonName(speciesInfo$taxonConcept$nameFormatted)
           taxonRank <- as.character(speciesInfo$taxonConcept$rank)
+          taxonStatus <- as.character(speciesInfo$taxonConcept$taxonomicStatus)
           parentGUID <- ifelse(nameSearch$rank == "subspecies",
                                as.character(speciesInfo$classification$speciesGuid),
                                as.character(speciesInfo$classification$genusGuid))
@@ -231,7 +232,10 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
                                as.character(speciesInfo$classification$genus))
           parentTaxonomicRank <- ifelse(nameSearch$rank == "subspecies", "species", "genus")
           #synonyms = synonyms
-          apcFamily <- as.character(speciesInfo$classification$family)
+          if (length(speciesInfo$classification$family) > 0)
+            apcFamily <- as.character(speciesInfo$classification$family)
+          else
+            apcFamily <- ""
 
           if (nrow(speciesInfo$synonyms) > 0)
           {
@@ -260,8 +264,25 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
 
           infraRank <- switch(as.character(speciesInfo$taxonConcept[1, "rank"]), species = "sp.", subspecies = "subsp.", variety = "var.", form = "f.")
 
-          nameParts <- taxonNameParts(as.character(speciesInfo$taxonConcept$nameString), verbose = !quiet)
+          nameParts <- taxonNameParts(as.character(speciesInfo$taxonConcept$nameString)) #, verbose = !quiet)
         }
+
+        print("=============================================")
+        print(acceptedName)
+        print(fullAcceptedName)
+        print(nameParts["genus"])
+        print(nameParts["species"])
+        print(nameParts["infraRank"])
+        print(nameParts["infraName"])
+        print(taxonAuthor)
+        print(acceptedGUID)
+        print(formattedAcceptedName)
+        print(taxonRank)
+        print(taxonStatus)
+        print(parentGUID)
+        print(parentTaxonomicRank)
+        print(synonyms)
+        print(apcFamily)
 
         checkResult <- data.frame(isValid = TRUE,
                                   isAccepted = TRUE,
@@ -277,7 +298,7 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
                                   acceptedFullGUID = acceptedFullGUID,
                                   formattedAcceptedName = formattedAcceptedName,
                                   taxonomicRank = taxonRank,
-                                  taxonomicStatus = "", #nameSearch$taxonomicStatus,
+                                  taxonomicStatus = taxonStatus, #nameSearch$taxonomicStatus,
                                   parentGUID = parentGUID,
                                   parentName = parentName,
                                   parentTaxonomicRank = parentTaxonomicRank,
