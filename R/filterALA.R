@@ -155,7 +155,7 @@ filterALAdata <- function(taxa = NULL,
         theRecords <- theRecords[grep("PreservedSpecimen", theRecords[, basisColInd]), ]
 
         if (trace) cat(" Found", nrow(theRecords), "herbarium records.\n")
-        if (nrow(theRecords) == 0) stop(paste0("No herbarium records found in the file '", inFilename, "'")
+        if (nrow(theRecords) == 0) stop(paste0("No herbarium records found in the file '", inFilename, "'"))
       }
 
       if (grepl(toupper(recType), "HUMANOBSERVATIONS"))
@@ -163,7 +163,7 @@ filterALAdata <- function(taxa = NULL,
         theRecords <- theRecords[grep("HumanObservation|''", theRecords$Basis.Of.Record), ]
 
         if (trace) cat(" Found",nrow(theRecords),"human observation records.\n")
-        if (nrow(theRecords) == 0) stop("No human observation records in the file '", inFilename, "'")
+        if (nrow(theRecords) == 0) stop(paste0("No human observation records in the file '", inFilename, "'"))
       }
 
       if (grepl(toupper(recType), "SURVEYRECORDS"))
@@ -171,7 +171,7 @@ filterALAdata <- function(taxa = NULL,
         theRecords <- theRecords[grep("SURVEY", toupper(theRecords$datasetName))]
 
         if (trace) cat(" Found", nrow(theRecords), "NSW veg. survey records.\n")
-        if (nrow(theRecords) == 0) stop("No survey records in the data file '", inFilename, "'")
+        if (nrow(theRecords) == 0) stop(paste0("No survey records in the data file '", inFilename, "'"))
       }
 
       if (filterCultivated)
