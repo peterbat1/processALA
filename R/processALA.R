@@ -6,6 +6,7 @@
 #' @name processALA
 #' @docType package
 #' @import ALA4R
+#' @import sf
 #' @importFrom RCurl basicHeaderGatherer getURL
 #' @importFrom rjson fromJSON
 NULL

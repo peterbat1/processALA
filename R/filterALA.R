@@ -138,21 +138,21 @@ filterALAdata <- function(taxa = NULL,
       }
 
       # Find coordinate columns
-      longitudeCol <- grep("LONGITUDE", toupper(colnames(theRecords)))[1]
-      latitudeCol <- grep("LATITUDE", toupper(colnames(theRecords)))[1]
+      longitudeCol <- grep("decimalLongitudeWGS84", colnames(theRecords))[1]
+      latitudeCol <- grep("decimalLatitudeWGS84", colnames(theRecords))[1]
 
       if (trace)
       {
-        cat("       >>> longitudeCol :", longitudeCol,"\n")
-        cat("       >>> latitudeCol  :", latitudeCol,"\n\n")
+        cat("       >>> longitudeCol :", longitudeCol, "\n")
+        cat("       >>> latitudeCol  :", latitudeCol, "\n\n")
       }
 
       # Record type filter:
+      basisColInd <- grep("^basisOfRecord", colnames(theRecords))
+
       if (grepl(toupper(recType), "HERBARIUMRECORDS"))
       {
-        basisColInd <- grep("^BASIS", toupper((colnames(theRecords))))
-
-        theRecords <- theRecords[grep("PreservedSpecimen", theRecords[, basisColInd]), ]
+        theRecords <- theRecords[grep("PRESERVED_SPECIMEN", theRecords[, basisColInd]), ]
 
         if (trace) cat(" Found", nrow(theRecords), "herbarium records.\n")
         if (nrow(theRecords) == 0) stop(paste0("No herbarium records found in the file '", inFilename, "'"))
@@ -160,9 +160,9 @@ filterALAdata <- function(taxa = NULL,
 
       if (grepl(toupper(recType), "HUMANOBSERVATIONS"))
       {
-        theRecords <- theRecords[grep("HumanObservation|''", theRecords$Basis.Of.Record), ]
+        theRecords <- theRecords[grep("OBSERVATION", theRecords[, basisColInd]), ]
 
-        if (trace) cat(" Found",nrow(theRecords),"human observation records.\n")
+        if (trace) cat(" Found", nrow(theRecords), "human observation records.\n")
         if (nrow(theRecords) == 0) stop(paste0("No human observation records in the file '", inFilename, "'"))
       }
 
@@ -176,15 +176,13 @@ filterALAdata <- function(taxa = NULL,
 
       if (filterCultivated)
       {
-        # Use ALA-generated flag to do a first filter for cultivated occurrence records
+        # Do to on-going contempt for API users shown by ALA, we have to make
+        # yet another change to hwo we trap roue colutivated samples.
+        # Previously, a flag field was provided. This is now gone! WITHOUT
+        # WARNING! AS USUAL FROM ALA! Also, field name changes mean we must
+        # replace 'raw _ locality' with 'verbatimLocality'
         if (trace) cat("   Filter cultivated records: ")
-        naughtyRecordsInd <- which(theRecords$Cultivated...escapee == "true")
-        if (length(naughtyRecordsInd) > 0) theRecords <- theRecords[-naughtyRecordsInd,]
-
-        # And we should also do a secondary filter because some records tagged "CULTIVATED:..."
-        # in the "raw _ locality" field are not represented in the "Cultivated...escapee" field.
-        # Such annoying inconsistencies are part and parcel of the modern ALA:
-        badRecords <- grep("^CULTIVATED", toupper(theRecords$Locality))
+        badRecords <- grep("^CULTIVATED", toupper(theRecords$verbatimLocality))
         if (length(badRecords > 0))
         {
           theRecords <- theRecords[-badRecords,]
@@ -237,7 +235,9 @@ filterALAdata <- function(taxa = NULL,
 
       if (filterByJurisdiction)
       {
-        # spatial procesing will fail if there are missing coordinates in the occurrence records, so perform an ad hoc cleaning
+        # Spatial processing will fail if there are missing coordinates in the
+        # occurrence records, so perform an ad hoc cleaning if it has not been
+        # done already
         if (!removeMissingCoords)
         {
           warning("removeMissingCoords = FALSE but they must be removed to complete a jurisdiction filter; missing coordinate records have been removed")
@@ -249,22 +249,32 @@ filterALAdata <- function(taxa = NULL,
           }
           else
           {
-            if (trace) cat("None found\n")
+            if (trace) cat("       None found\n")
           }
         }
 
-        jurisdictionTable <- fetchJurisdictionInfo(thisTaxon)
+        jurisdictionTable <- fetchJurisdictionInfo(thisTaxon, trace = trace)
 
-        if (is.na(jurisdictionTable))
-        {
-          if (trace) cat("       ALA cannot provide jurisdiction information at the moment - skipping jurisdiction filter\n")
-        }
-        else
+        if (is.data.frame(jurisdictionTable))
         {
           # Now find out which jurisdiction each occurrence record falls
           if (trace) cat("       Filter by jurisdication:\n")
-          spdf <- sp::SpatialPointsDataFrame(coords = theRecords[, c(longitudeCol, latitudeCol)], data = theRecords, proj4string = sp::CRS("+proj=longlat +ellps=WGS84"))
-          polyMatch <- sp::over(spdf, ozPoly)
+
+          occ_sf <- sf::st_as_sf(theRecords, coords = c(longitudeCol, latitudeCol), crs = 4326)
+          stuff <- sf::st_intersects(occ_sf, ozPoly) #,  sparse = FALSE)
+          stuff <- unlist(lapply(stuff, function(el){ifelse(is.null(el), NA, el)}))
+          thingy <- sf::st_drop_geometry(ozPoly[stuff, "STATE_CODE"])
+          hits <- stateLookup[(thingy$STATE_CODE + 1), 2]
+          #### NB need to merge the JBT records into ACT because Jervis Bay
+          #### Territory curiously does not appear in APC jurisdiction tags
+          hits[hits == "JBT"] <- "ACT"
+
+          if (trace)
+          {
+            cat("=================================\nDump of vector 'hits':\n")
+            print(hits)
+            cat("---------------------------------\n\n")
+          }
 
           # Have we been passed a trinomial? If so, then we check the base binomial against APC jurisdiction info:
           nameParts <- strsplit(thisTaxon, " ")
@@ -272,29 +282,11 @@ filterALAdata <- function(taxa = NULL,
 
           if (trace) cat("         Filtering any records not falling in Australian juridictions for ", thisTaxon2, ":", sep = "")
 
-          polyFilter <- which(is.na(polyMatch$STATE_CODE))
-
-          if (trace) print(polyMatch$STATE_CODE)
-
-          if (length(polyFilter) > 0)
-          {
-            theRecords <- theRecords[-polyFilter,]
-            polyMatch <- polyMatch[-polyFilter,]
-            if (trace) cat(" found",length(polyFilter),"records to be removed;",nrow(theRecords),"records remain\n")
-          }
-          else
-          {
-            if (trace) cat(" None found\n")
-          }
-
-          # Translate numeric codes into abbreviations for matching against the appropriate entry in the jurisdictionTable
-          hits <- stateLookup[as.character(polyMatch$STATE_CODE),2]
-          if (trace) print(hits)
+          if (trace) cat(" found", sum(is.na(hits)) ,"records to be removed;", nrow(theRecords) - sum(is.na(hits)), "records remain\n")
 
           # In which jurisdictions does this taxon occur according to the APC?
-          inThisLot <- colnames(jurisdictionTable[1, 4:ncol(jurisdictionTable)])
-          #if (trace) print(inThisLot)
-          inThisLot <- inThisLot[-which(is.na(jurisdictionTable[1, 4:ncol(jurisdictionTable)]))]
+          inThisLot <- hdr[!is.na(jurisdictionTable[1, hdr])]
+
           if (trace)
           {
             cat("\n=========================\nAPC-reported jurisdictions:\n")
@@ -317,13 +309,17 @@ filterALAdata <- function(taxa = NULL,
               cat("========================\n")
             }
 
-            theRecords <- theRecords[-naughtyRecordsInd,]
-            if (trace) cat(" found",length(naughtyRecordsInd),"records to be removed;",nrow(theRecords),"records remain\n")
+            theRecords <- theRecords[-naughtyRecordsInd, ]
+            if (trace) cat(" found", length(naughtyRecordsInd) ,"records to be removed;", nrow(theRecords) ,"records remain\n")
           }
           else
           {
-            if (trace) cat("None found\n")
+            if (trace) cat("        None found\n")
           }
+        }
+        else
+        {
+          if (trace) cat("       ALA cannot provide jurisdiction information at the moment - skipping jurisdiction filter\n")
         }
       }
 
