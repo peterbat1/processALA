@@ -235,6 +235,11 @@ filterALAdata <- function(taxa = NULL,
 
       if (filterByJurisdiction)
       {
+        # To deal with DPIE systems running Windows OS and stuck on R v3.5 or
+        # thereabouts, gather system info for later conditional code execution
+        os_type <- Sys.info()["sysname"]
+        R_ver_major <- as.numeric(R.Version()$major)
+
         # Spatial processing will fail if there are missing coordinates in the
         # occurrence records, so perform an ad hoc cleaning if it has not been
         # done already
@@ -260,14 +265,39 @@ filterALAdata <- function(taxa = NULL,
           # Now find out which jurisdiction each occurrence record falls
           if (trace) cat("       Filter by jurisdication:\n")
 
-          occ_sf <- sf::st_as_sf(theRecords, coords = c(longitudeCol, latitudeCol), crs = 4326)
-          stuff <- sf::st_intersects(occ_sf, ozPoly) #,  sparse = FALSE)
-          stuff <- unlist(lapply(stuff, function(el){ifelse(is.null(el), NA, el)}))
-          thingy <- sf::st_drop_geometry(ozPoly[stuff, "STATE_CODE"])
-          hits <- stateLookup[(thingy$STATE_CODE + 1), 2]
-          #### NB need to merge the JBT records into ACT because Jervis Bay
-          #### Territory curiously does not appear in APC jurisdiction tags
-          hits[hits == "JBT"] <- "ACT"
+          # Here is the conditional code execution to deal with DPIE's aging R version
+          if ((os_type == "Linux") | (R_ver_major >= 4))
+          {
+            # Either R is running on a proper system or, even if running on a
+            # DPIE Windows machine, it is running an acceptable version of R...
+            # we live in hope!
+            occ_sf <- sf::st_as_sf(theRecords, coords = c(longitudeCol, latitudeCol), crs = 4326)
+            stuff <- sf::st_intersects(occ_sf, ozPolygon_sf) #,  sparse = FALSE)
+            stuff <- unlist(lapply(stuff, function(el){ifelse(is.null(el), NA, el)}))
+            thingy <- sf::st_drop_geometry(ozPolygon_sf[stuff, "STATE_CODE"])
+
+            # Translate numeric codes into abbreviations for matching against the appropriate entry in the jurisdictionTable
+            hits <- stateLookup[(thingy$STATE_CODE + 1), 2]
+            #### NB need to merge the JBT records into ACT because Jervis Bay
+            #### Territory curiously does not appear in APC jurisdiction tags
+            hits[hits == "JBT"] <- "ACT"
+          }
+          else
+          {
+            # We must revert to clunky sp-based methods
+            spdf <- sp::SpatialPointsDataFrame(coords = theRecords[, c(longitudeCol, latitudeCol)], data = theRecords, proj4string = sp::CRS("+proj=longlat +ellps=WGS84"))
+            polyMatch <- sp::over(spdf, ozPolygon)
+            polyFilter <- which(is.na(polyMatch$STATE_CODE))
+
+            if (length(polyFilter) > 0)
+            {
+              theRecords <- theRecords[-polyFilter,]
+              polyMatch <- polyMatch[-polyFilter,]
+            }
+
+            # Translate numeric codes into abbreviations for matching against the appropriate entry in the jurisdictionTable
+            hits <- stateLookup[as.character(polyMatch$STATE_CODE),2]
+          }
 
           if (trace)
           {
