@@ -7,8 +7,9 @@
 fetchALAdata(
   taxonList = NULL,
   baseOutputPath = defaultOutputFolder,
-  theseFields = stdFields,
+  theseFields = "",
   doNameCheck = TRUE,
+  ALA_registered_email = "",
   verbose = FALSE
 )
 }
@@ -20,6 +21,8 @@ fetchALAdata(
 \item{theseFields}{Character vector. A set of ALA occurrence field names to be returned in the API 'GET' call. The default is a set suited to post-processing of plant occurrence records. See Details below.}
 
 \item{doNameCheck}{Logical. Should a check of taxonomic names be performed? Default is TRUE; if FALSE, then it is assumed that names are valid and accepted as reported by \code{\link{checkTaxonName}}.}
+
+\item{ALA_registered_email}{Character string. Email address registered with ALA for occurrence data downloads.}
 
 \item{verbose}{Logical. Should additional progress messages be produced?}
 }

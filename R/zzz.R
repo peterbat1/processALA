@@ -1,8 +1,6 @@
 # Set global parameters
 .onLoad <- function(libname, pkgname)
 {
-  ALA4R::ala_config(caching = "off")
-
   systemInfo <- Sys.info()
   if (systemInfo["sysname"] == "Linux")
   {
@@ -18,8 +16,8 @@
   #                  "month", "year", "basis_of_record", "verbatim_locality", "data_provider",
   #                  "dataset_name")
 
-  stdFields <<-  c("id", "catalogNumber", "scientificName", "institutionCode", "collectionCode",
-                   "collectionName", "decimalLatitude", "decimalLongitude", "coordinateUncertaintyInMeters", "recordedBy",
-                   "month", "year", "basisOfRecord", "verbatimLocality", "dataProviderName",
-                   "datasetName")
+  # stdFields <<-  c("id", "catalogNumber", "scientificName", "institutionCode", "collectionCode",
+  #                  "collectionName", "decimalLatitude", "decimalLongitude", "coordinateUncertaintyInMeters", "recordedBy",
+  #                  "month", "year", "basisOfRecord", "verbatimLocality", "dataProviderName",
+  #                  "datasetName")
 }

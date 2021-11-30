@@ -5,7 +5,7 @@
 #'
 #' @name processALA
 #' @docType package
-#' @import ALA4R
-#' @importFrom RCurl basicHeaderGatherer getURL
-#' @importFrom rjson fromJSON
+#' @import galah
+#' @importFrom httr GET
+#' @importFrom dplyr bind_rows
 NULL

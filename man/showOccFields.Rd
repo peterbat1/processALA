@@ -10,7 +10,7 @@ showOccFields(fieldSet = "standard")
 \item{fieldSet}{Character string. Specifies the set of ALA occurrence fields to be returned.}
 }
 \value{
-A dataframe listing all ALA-supplied information for the specified set of fields.
+A dataframe listing all ALA-supplied information for database fields linked to occurence records.
 }
 \description{
 Show ALA Occurrence fields
@@ -19,8 +19,6 @@ Show ALA Occurrence fields
 The returned dataframe shows all the information associated with the set of fields specified by \emph{fieldSet}. This is very large body of information. The values which must be supplied to \link{fetchALAdata} in the parameter \emph{fieldSet} are found in the 'name' column.
 
 The default value for \emph{fieldSet} is 'standard' and this returns the set of fields used for a default download of records; 'all' shows all available ALA occurrence fields which may be used for customised calls to the function \link{fetchALAdata}.
-
-Note that this function is simple wrapper around the ALA4R function \link{ala_fields}.
 }
 \examples{
 \dontrun{
