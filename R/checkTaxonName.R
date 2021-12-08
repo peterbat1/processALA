@@ -39,7 +39,7 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
   # whereas searches on the pure genus name will always return clean results
   thisTaxon <- trimws(sub("sp.$", "", trimws(thisTaxon)))
 
-  if (!quiet) cat("  no match in taxonTable synonyms\n  checking APNI for matching names\n")
+  #if (!quiet) cat("  no match in taxonTable synonyms\n  checking APNI for matching names\n")
   ##nameSearch <- ALA4R::search_names(thisTaxon, output_format = "complete")
 
   # Fetch basic taxonomic information
@@ -64,7 +64,7 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
     parentTaxonInfo <- galah::select_taxa(moreInfo$taxonConcept$parentGuid, is_id = TRUE)
 
     checkResult <- data.frame(isValid = TRUE,
-                              isAccepted = TRUE,
+                              isAccepted = basicInfo$search_term == basicInfo$scientific_name,
                               searchName = thisTaxon,
                               acceptedName = basicInfo[1, "scientific_name"],
                               fullAcceptedName = paste(basicInfo[1, "scientific_name"], basicInfo[1, "scientific_name_authorship"]),

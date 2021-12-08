@@ -55,7 +55,7 @@ ALA is an important source of occurrence data and taxonomic information which ca
 
 ALA also maintains an _**R**_-package, **galah**, to make it very easy to use the ALA API. The functions within that package allow us to make use of the API without having to learn the ins and outs of composing query strings and the application of web access tools such as _curl_ and _wget_. (Of course, if you're into such things there are fun times ahead for you if you want to work directly with curl or wget calls.)
 
-The package **processALA** adds another level of refinement. It highly automates key steps in the retrieval and processing of ALA data by utilising a few key functions in the ALA4R package and adds functions to assist in data cleaning. In addition, it adds a mechanism to access some ALA API functions not exposed in **galah**.
+The package **processALA** adds another level of refinement. It highly automates key steps in the retrieval and processing of ALA data by utilising a few key functions in the **galah** package and adds functions to assist in data cleaning. In addition, it adds a mechanism to access some ALA API functions not exposed in **galah**.
 
 There are three stages to obtaining occurrence data from ALA:
 
@@ -73,13 +73,13 @@ The focus of this vignette is to guide you in applying them to fetching occurren
 
 ## Handling taxonomic names
 
-The ALA API provides a number of functions which allow you to interrogate APNI and APC to resolve plant names to a matching accepted name from APC. A function in **galah**, _select_taxa()_ is available to determine the status of a name and provide a few details associated with it. The **processALA** function _checkTaxonName()_ uses that function to check a name you have supplied and also makes a few calls to ALA PAI funcitons not accessible via **galah**. The returned information is useful for further processing of records, and for creating or updating a taxonomic table for your work.
+The ALA API provides a number of functions which allow you to interrogate APNI and APC to resolve plant names to a matching accepted name from APC. A function in **galah**, _select_taxa()_ is available to determine the status of a name and provide a few details associated with it. The **processALA** function _checkTaxonName()_ uses that function to check a name you have supplied and also makes a few calls to ALA API functions not accessible via **galah**. The returned information is useful for further processing of records, and for creating or updating a taxonomic table for your work.
 
 Steps to checking a name include:
 
 1. Call _checkTaxonName()_ with your prospective name as the first parameter and assign the result to an object
 
-1. Examine data elements in the result object and use them to determine the next step
+2. Examine data elements in the result object and use them to determine the next step
 
 For example:
 
@@ -92,12 +92,13 @@ The result object **ans** is a 1-row data frame with the following columns or da
 
 Element | Data type and contents
 --------|-----------------------
-isAccepted | Logical. Is the searched for taxonomic name accepted by ALA either as an accepted name or a synonym of an accepted name?
+isValid | Logical. Is the taxonomic name found in the Australian Plant Name Index (APNI); to be listed in APNI a taxonomic name must have been formally defined and applied in a publication to collected material.
+isAccepted | Logical. Is the searched for taxonomic name accepted by the Australian Plant Census (APC) as an accepted name associated with a taxonomic concept.
 searchName | Character (string). Taxonomic name searched for.
 acceptedName | Character (string). The accepted taxon name corresponding to the name searched for.
 fullAcceptedName | Character (string). Binomial/trinomial + author of the accepted taxon name.
 acceptedGUID | Character (string). The ALA Globally Unique Identifier or GUID; a numeric string uniquely indexing a taxonomic concept in the Australian Plant Name Index (APNI) component of the National Species List (NSL). No match results in a GUID of "Not_accepted" being returned.
-acceptedFullGUID | Character (string). The full URL form of the GUID: stored as a convenience to speed calls to the ALA API, and assist maintence of code.
+acceptedFullGUID | Character (string). The full URL form of the GUID: stored as a convenience to speed calls to the ALA API, and assist maintenance of code.
 formattedAcceptedName | Character (string). Full taxonomic name (i.e. binomial/trinomial + author) with simple HTML mark-up to italicise the binomial/trinomial part.
 taxonomicRank | Character (string). Taxonomic rank of the accepted name.
 parentGUID | Character (string). Full GUID of the taxonomic parent of the accepted taxon.
@@ -114,7 +115,7 @@ FALSE | FALSE | You have found nothing matching any name listed in APNI and, nat
 TRUE  | FALSE | Your search name is listed in APNI but it is not the accepted name for the taxon according to APC. The corresponding APC accepted name will be shown in the _acceptedName_ column of the result. Your search name will be shown as a synonym of the accepted name in the field _synonyms_.
 TRUE | TRUE | Congratulations! The name you searched for is listed in APNI and is the accepted name according  to APC. In this case, _searchName_ and _acceptedName_ will be identical.
 
-Here are some quick examples of each state:
+Here are some quick examples of calls to _checkTaxonName()_ resulting in each state:
 
 ### FALSE : FALSE
 ```{r}
@@ -131,19 +132,25 @@ ans <- checkTaxonName("Acacia abietina")
 ans <- checkTaxonName("Acacia linifolia")
 ```
 
-Hopefully you can see the potential for using the information returned by _checkTaxonName()_. You should be able to write some _**R**_ code to flag bad names and have your script act accordingly. You can easily add a list of synonyms to your output files or documents. You can readily insert the full accepted taxonomic names into output, including using the HTML-formatted version in web-based outputs (e.g. _**R**_ Shiny apps).
+Hopefully you can see the potential for using the information returned by _checkTaxonName()_. For example:
+
+- You should be able to write some _**R**_ code to flag bad names and have your script act accordingly.
+
+- You can easily add a list of synonyms to your output files or documents by using text stored in the _synonyms_ field of the object returned by _checkTaxonName()_.
+
+- You can readily insert the full accepted taxonomic names into output, including using the HTML-formatted version in web-based outputs (e.g. _**R**_ Shiny apps).
 
 ## Downloading occurrence data
 
 The next step is downloading occurrence data for an accepted taxonomic name. This is performed by the function _fetchALAdata()_ which uses the function _ala_occurrences()_ in the package **galah**. Note that the parameter _doNameCheck_ is by default set to **TRUE** so that a name check is performed before attempting a data download. However, if a prior call has been made to _checkTaxonName()_, then this parameter may be set to **FALSE** and so some small quantum of time may be saved.
 
-The **galah** function _ala_occurrences()_ returns a data frame which is the table of occurrence data. _fetchALAdata()_ saves the downlaoded data in the specified output folder using the following naming convention: "Genus_specificEpithet.csv".
+The **galah** function _ala_occurrences()_ returns a data frame which is the table of occurrence data. _fetchALAdata()_ saves the downloaded data in the specified output folder using the following naming convention: "Genus_specificEpithet.csv".
 
 Within the raw data table maybe found occurrence records for several record types which are indicated in the field _basisOfRecord_. The record types include the following:
 
 basisOfRecord | Interpretation
 --------------|-----------------
-PreservedSpecimen | Herbarium records passed into ALA from the consortium of herbaria and museums which supply data to AVH 
+PreservedSpecimen | Herbarium records passed into ALA from the consortium of herbaria and museums which supply data to Australasian Virtual Herbarium (AVH) and which is accessed via ALA 
 HumanObservation | Human observations which means any record of species occurrence arising from field encounters or observations which did not result in a voucher specimen being lodged in an herbarium. Examples include casual observations by the general public (also sometimes referred to as 'incidental observations'), and data from systematic vegetation surveys. 
 Image | An image of a species which is supplied with geo-coordinates. There are typically few of these encountered in most data downloads.
 LivingSpecimen | A form of human observation or incidental observation referring to a specimen in a living collection such as a botanic garden or arboretum.
@@ -157,17 +164,17 @@ As a final point, note that image and living specimen data are not currently ext
 
 ## Filtering/cleaning ALA data
 
-ALA data is _**dirty**_ data! ALA is just a data aggregation service and web portal transmitting the data as received from data providers. ALA does perform data quality checks and flags as many possible errors as it can, but the data remain as supplied and so includes a range of errors. It is up to the end users to either use the quality flags raised by ALA or, preferably, do additional checks to arrive at the cleanest occurrence data possible.
+ALA data is _**dirty**_ data! ALA is just a data aggregation service and web portal transmitting the data as received from data providers. ALA does perform data quality checks and flags as many possible errors as it can, but the data remain as supplied and may include a range of errors. It is up to the end users to either use the quality flags raised by ALA or, preferably, do additional checks to arrive at the cleanest occurrence data possible.
 
 > **It is absolutely essential that you perform data cleaning or filtering before using ALA occurrence data.**
 
-My experience indicates that there are three types of error present in ALA occurrence data. These include:
+Accumulated experience indicates that there are three types of error present in ALA occurrence data. These include:
 
 * Location errors
 * Taxon ID errors
 * Record type errors
 
-We will take a quick look at each error type and then see how the function _filterALAdata()_ attempts to remove each of them from raw ALA occurrence data.
+These three types of error have been identified in many other aggregated biodiversity data sets including the Global Biodiversity Information Facility (GBIF). We will take a quick look at each error type and then see how the function _filterALAdata()_ attempts to remove each of them from raw ALA occurrence data.
 
 ### Location errors
 
@@ -176,7 +183,7 @@ Location errors are caused by several conditions:
 * missing geo-coordinates (lat/longs)
 * inaccurate geo-coordinates: poor data recording by field collectors, data entry errors and, for very old records, imprecise location descriptions which cannot be interpreted to derive meaningful geo-coordinates
 
-Location accuracy and record completeness has improved greatly in recent years and is particularly good from around 2000 onwards with the increasing use of GPS technology. There is clearly a temporal dimension to geo-coordinate data quality - older records have higher missing coordinate rates and lower accuracy.
+Location accuracy and record completeness has improved greatly in recent years and is particularly good from the late 1990s with the increasing use of GPS technology. There is clearly a temporal dimension to geo-coordinate data quality - older records have higher missing coordinate rates and lower accuracy.
 
 _filterALAdata()_ filters missing coordinates by default (i.e. the parameter _removeMissingCoordinates_ = TRUE by default).
 
@@ -188,7 +195,7 @@ A list of the states and territories included in _fetchJurisdictionInfo()_, and 
 
 Taxonomic errors may arise from mis-identification in the field which is subsequently not corrected. This type of error can be extremely hard to identify in ALA raw data. In some instances such errors may be apparent when there are a few spatial outliers beyond the expected distribution of a taxon. However, such spatial outliers can also be due to bad geo-coordinates or record type errors.
 
-ALA uses the resources APNI and APC to try and resolve taxonomic names supplied by data providers and in most instances this is highly successful.
+ALA uses the resources APNI and APC to try and resolve taxonomic names supplied by data providers and in most instances this is highly successful. However, this error-trapping cannot be guaranteed to be 100% effective. Whenever it is feasible, you should review downloaded to look for any anomalies. 
 
 There is also a temporal dimension to taxonomic name errors. Very old specimens may have undergone many complex taxonomic revisions which may make it difficult to assign a modern taxonomic concept to a specimen. This is particularly so when there have been taxonomic splits, and even more problematic when there have been splits for sympatric forms. It the last case, it may be impossible to fix taxonomic problems and you will have to make a call on what to do with taxa in this category and their occurrence data.
 
