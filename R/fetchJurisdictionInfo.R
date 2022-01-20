@@ -21,7 +21,7 @@
 #'
 #' Makes calls to the Atlas of Living Australia (ALA) API to obtain information on the Australian states and territores a species has been accepted by experts to occur. These data are part of the Australian Plant Census (APC), here they are used to perform a stage of ALA occurrence record filtering in the function \code{\link{filterALAdata}}.
 #'
-#' @param theseTaxa Character object containing the taxon name to be processed.
+#' @param thisTaxon Character object containing the taxon name to be processed.
 #' @param trace Logical. If TRUE then debug messages are printed to the console; if FALSE (default) then only sparse progress messages are output.
 #'
 #' @return A one row data.frame with the following columns:
@@ -81,7 +81,7 @@ fetchJurisdictionInfo <- function(thisTaxon = NULL, trace = FALSE)
 
   thisTaxon <- trimws(thisTaxon)
 
-  ans <- checkTaxonName2(thisTaxon)
+  ans <- checkTaxonName(thisTaxon)
 
   taxonGUID <- ans$acceptedGUID
 
