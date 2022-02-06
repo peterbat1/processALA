@@ -39,13 +39,11 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
   # whereas searches on the pure genus name will always return clean results
   thisTaxon <- trimws(sub("sp.$", "", trimws(thisTaxon)))
 
-  #if (!quiet) cat("  no match in taxonTable synonyms\n  checking APNI for matching names\n")
-  ##nameSearch <- ALA4R::search_names(thisTaxon, output_format = "complete")
-
   # Fetch basic taxonomic information
-  basicInfo <- galah::select_taxa(thisTaxon)
+  #basicInfo <- galah::select_taxa(thisTaxon)
+  basicInfo <- data.frame(galah::search_taxa(thisTaxon))
 
-  if (length(basicInfo) > 1)
+  if (ncol(basicInfo) > 1)
   {
     # Name returned results: we have more to do...
     tmp <- strsplit(basicInfo$taxon_concept_id, "/")
@@ -61,14 +59,19 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
     else
       synonyms = "No_data"
 
-    parentTaxonInfo <- galah::select_taxa(moreInfo$taxonConcept$parentGuid, is_id = TRUE)
+    parentTaxonInfo <- galah::search_identifiers(moreInfo$taxonConcept$parentGuid)
+
+    if (is.null(basicInfo[1, "genus"]))
+      thisGenus <- strsplit(basicInfo[1, "scientific_name"], " ")[[1]][1]
+    else
+      thisGenus <- basicInfo[1, "genus"]
 
     checkResult <- data.frame(isValid = TRUE,
                               isAccepted = basicInfo$search_term == basicInfo$scientific_name,
                               searchName = thisTaxon,
                               acceptedName = basicInfo[1, "scientific_name"],
                               fullAcceptedName = paste(basicInfo[1, "scientific_name"], basicInfo[1, "scientific_name_authorship"]),
-                              genus = basicInfo[1, "genus"],
+                              genus = thisGenus,
                               species = basicInfo[1, "scientific_name"],
                               infraSpecificRank = "No_data",
                               infraSpecificEpithet = "No_data",
@@ -76,7 +79,7 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
                               acceptedGUID = guid,
                               acceptedFullGUID = basicInfo[1, "taxon_concept_id"],
                               formattedAcceptedName = paste0("<i>", basicInfo[1, "scientific_name"], "</i> ", basicInfo[1, "scientific_name_authorship"]),
-                              taxonomicStatus = "No_data",
+                              taxonomicStatus = moreInfo$taxonConcept["taxonomicStatus"],
                               taxonomicRank = basicInfo[1, "rank"],
                               parentGUID = parentGUID,
                               parentName = parentTaxonInfo[1, "scientific_name"],

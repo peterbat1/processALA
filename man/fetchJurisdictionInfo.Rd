@@ -7,9 +7,9 @@
 fetchJurisdictionInfo(thisTaxon = NULL, trace = FALSE)
 }
 \arguments{
-\item{trace}{Logical. If TRUE then debug messages are printed to the console; if FALSE (default) then only sparse progress messages are output.}
+\item{thisTaxon}{Character object containing the taxon name to be processed.}
 
-\item{theseTaxa}{Character object containing the taxon name to be processed.}
+\item{trace}{Logical. If TRUE then debug messages are printed to the console; if FALSE (default) then only sparse progress messages are output.}
 }
 \value{
 A one row data.frame with the following columns:
