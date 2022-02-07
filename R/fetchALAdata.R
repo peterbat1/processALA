@@ -110,9 +110,9 @@ fetchALAdata <- function(taxonList = NULL,
     meta_destFile <- paste0(destFolder, "/", this_Taxon, "_metadata.csv")
     #theseFields <- unlist(strsplit("id,catalogue_number,taxon_name,institution_code,collection_code,collection_name,latitude,longitude,coordinate_uncertainty,collector,month,year,basis_of_record,verbatim_locality,data_provider,dataset_name", ","))
 
-    ans <- galah::ala_occurrences(taxa = galah::select_taxa(thisTaxon),
+    ans <- data.frame(galah::atlas_occurrences(identify = galah::galah_identify(thisTaxon),
                                   #filters = galah::select_filters(),
-                                  columns = galah::select_columns(theseFields))
+                                  select = galah::galah_select(theseFields)))
 
     # ans <- ALA4R::occurrences(taxon = paste0("\"",thisTaxon,"\""),
     #                           fields = stdFields, #theseFields,
