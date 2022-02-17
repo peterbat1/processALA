@@ -45,7 +45,7 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
   # From this point on, make sure that references to genera are without a
   # trailing "sp." as this can lead to unexpected returns from name searches,
   # whereas searches on the pure genus name will always return clean results
-  thisTaxon <- trimws(sub("sp.$", "", trimws(thisTaxon)))
+  thisTaxon <- trimws(sub("sp.$|spp.$", "", trimws(thisTaxon)))
 
   ans_httr_species_search <- httr::content(httr::GET(paste0("http://bie.ala.org.au/ws/search.json?q=", thisTaxon)))
 
