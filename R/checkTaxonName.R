@@ -61,7 +61,6 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
     # them so that this don't fail later when the values in those fields are used
     ans_httr_species_search$searchResults$results[[1]] <- lapply(ans_httr_species_search$searchResults$results[[1]], function(el){if (is.null(el)) el <- "" else el})
 
-
     numResults <- length(ans_httr_species_search$searchResults$results)
 
     namesList <- NULL
@@ -99,135 +98,182 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
     thisTaxonMatch <- grep(paste0("^", thisTaxon, "$"), allResults$scientificName)
     allResults <- allResults[thisTaxonMatch, ]
 
-    if (allResults[1, "taxonomicStatus"] == "accepted")
+    if (!quiet & (nrow(allResults) > 0))
     {
-      #acceptedName <- allResults[1, "name"]
-      acceptedFullGUID <- allResults[1, "guid"]
-      fullAcceptedName <- allResults[1, "nameComplete"]
-    }
-    else
-    {
-      fullAcceptedName <- allResults[1, "acceptedConceptName"]
-      acceptedFullGUID <- allResults[1, "acceptedConceptID"]
+      print(allResults)
+      print(allResults[1, "taxonomicStatus"] == "accepted")
     }
 
-    # Extract GUID integer part for later use in preparing returned data.frame
-    tmp <- strsplit(acceptedFullGUID, "/")
-    guid <- tmp[[1]][length(tmp[[1]])]
-
-    # Now that we have a GUID, perform a second call to gather complete
-    # information on the accepted taxon concept
-    # Fetch synonym information
-    moreInfo <- httr::content(httr::GET(paste0("https://bie-ws.ala.org.au/ws/species/", acceptedFullGUID, ".json")))
-
-    # Some search names appear to return NULL values in some fields, soe patch
-    # them so that this don't fail later when the values in those fields are used
-    moreInfo$taxonConcept <- lapply(moreInfo$taxonConcept, function(el){if (is.null(el)) el <- "" else el})
-
-    acceptedName <- moreInfo$taxonConcept$nameString
-
-    tmp  <- strsplit(moreInfo$taxonConcept$parentGuid, "/")
-    parentGUID <- tmp[[1]][length(tmp[[1]])]
-
-    # Extract and format synonym information (is it is present)
-    if (length(moreInfo$synonyms) > 0)
-      synonyms <- paste(unlist(lapply(moreInfo$synonyms, function(el){el$nameString})), collapse = "; ")
-    else
-      synonyms = "No_data"
-
-    # Information on the parent taxon
-    parentTaxonInfo <- galah::search_identifiers(moreInfo$taxonConcept$parentGuid)
-
-    # Prepare name fields
-    if (moreInfo$taxonConcept$rankString %in% c("subspecies", "variety"))
+    # If nrow(allResults) == 0, then conclude that there was a partial name
+    # match (e.g. Genus spelled correctly by specific epithet has a typo)
+    if (nrow(allResults)  > 0)
     {
-      infraSpecificRank <- moreInfo$taxonConcept$rankString
-      nameParts <- strsplit(moreInfo$taxonConcept$nameString, " ", fixed = TRUE)[[1]]
-      infraSpecificEpithet <- nameParts[4]
-      infraSpecificRankAbbrev <- nameParts[3]
-      specificEpithet <- nameParts[2]
-      genus <- nameParts[1]
-
-      # ALA is slack and only presents author details for infraspecific ranks in
-      # the fully formatted name string, leaving the author field enpty!
-      tmp <- strsplit(moreInfo$taxonConcept$nameFormatted, "author\">")
-
-      # There will be at least one author, the "base author":
-      baseAuthor <- trimws(strsplit(tmp[[1]][2], "</span>")[[1]][1])
-
-      # Is there an additional author string?
-      if (length(tmp[[1]]) > 2)
+      if (allResults[1, "taxonomicStatus"] == "accepted")
       {
-        author <- trimws(strsplit(tmp[[1]][3], "</span>")[[1]][1])
+        #acceptedName <- allResults[1, "name"]
+        acceptedFullGUID <- allResults[1, "guid"]
+        fullAcceptedName <- allResults[1, "nameComplete"]
       }
       else
-        author <- ""
-
-      taxonAuthor <- paste(baseAuthor, author)
-      formattedAcceptedName <- paste0("<i>", genus, " ", specificEpithet, "</i> ", taxonAuthor, " ", infraSpecificRankAbbrev, " <i>", infraSpecificEpithet, "</i>")
-    }
-    else
-    {
-      infraSpecificRank <- ""
-      infraSpecificEpithet <- ""
-      infraSpecificRankAbbrev <- ""
-      nameParts <- strsplit(moreInfo$taxonConcept$nameString, " ", fixed = TRUE)[[1]]
-      formattedAcceptedName <- paste0("<i>", acceptedName, "</i> ", moreInfo$taxonConcept$author)
-      # Family versus Genus versus Species
-      if (length(nameParts) == 1)
       {
-        # Family versus Genus
-        if (moreInfo$taxonConcept$rankString == "family")
+        acceptedFullGUID <- allResults[1, "acceptedConceptID"]
+        fullAcceptedName <- allResults[1, "acceptedConceptName"]
+
+        # if (!quiet)
+        # {
+        #   print("====")
+        #   print(acceptedFullGUID)
+        # }
+      }
+
+      # Extract GUID integer part for later use in preparing returned data.frame
+      tmp <- strsplit(acceptedFullGUID, "/")
+      guid <- tmp[[1]][length(tmp[[1]])]
+
+      # Now that we have a GUID, perform a second call to gather complete
+      # information on the accepted taxon concept
+      # Fetch synonym information
+      moreInfo <- httr::content(httr::GET(paste0("https://bie-ws.ala.org.au/ws/species/", acceptedFullGUID, ".json")))
+
+      # Some search names appear to return NULL values in some fields, soe patch
+      # them so that this don't fail later when the values in those fields are used
+      moreInfo$taxonConcept <- lapply(moreInfo$taxonConcept, function(el){if (is.null(el)) el <- "" else el})
+
+      acceptedName <- moreInfo$taxonConcept$nameString
+
+      tmp  <- strsplit(moreInfo$taxonConcept$parentGuid, "/")
+      parentGUID <- tmp[[1]][length(tmp[[1]])]
+
+      # Extract and format synonym information (is it is present)
+      if (length(moreInfo$synonyms) > 0)
+        synonyms <- paste(unlist(lapply(moreInfo$synonyms, function(el){el$nameString})), collapse = "; ")
+      else
+        synonyms = "No_data"
+
+      # Information on the parent taxon
+      parentTaxonInfo <- galah::search_identifiers(moreInfo$taxonConcept$parentGuid)
+
+      # Prepare name fields
+      if (moreInfo$taxonConcept$rankString %in% c("subspecies", "variety"))
+      {
+        infraSpecificRank <- moreInfo$taxonConcept$rankString
+        nameParts <- strsplit(moreInfo$taxonConcept$nameString, " ", fixed = TRUE)[[1]]
+        infraSpecificEpithet <- nameParts[4]
+        infraSpecificRankAbbrev <- nameParts[3]
+        specificEpithet <- nameParts[2]
+        genus <- nameParts[1]
+
+        # ALA is slack and only presents author details for infraspecific ranks in
+        # the fully formatted name string, leaving the author field enpty!
+        tmp <- strsplit(moreInfo$taxonConcept$nameFormatted, "author\">")
+
+        # There will be at least one author, the "base author":
+        baseAuthor <- trimws(strsplit(tmp[[1]][2], "</span>")[[1]][1])
+
+        # Is there an additional author string?
+        if (length(tmp[[1]]) > 2)
         {
-          # Family
-          specificEpithet <- ""
-          genus <- ""
-          taxonAuthor <- moreInfo$taxonConcept$author
-          formattedAcceptedName <- paste(acceptedName, taxonAuthor)
+          author <- trimws(strsplit(tmp[[1]][3], "</span>")[[1]][1])
+        }
+        else
+          author <- ""
+
+        taxonAuthor <- paste(baseAuthor, author)
+        formattedAcceptedName <- paste0("<i>", genus, " ", specificEpithet, "</i> ", taxonAuthor, " ", infraSpecificRankAbbrev, " <i>", infraSpecificEpithet, "</i>")
+      }
+      else
+      {
+        infraSpecificRank <- ""
+        infraSpecificEpithet <- ""
+        infraSpecificRankAbbrev <- ""
+        nameParts <- strsplit(moreInfo$taxonConcept$nameString, " ", fixed = TRUE)[[1]]
+        formattedAcceptedName <- paste0("<i>", acceptedName, "</i> ", moreInfo$taxonConcept$author)
+        # Family versus Genus versus Species
+        if (length(nameParts) == 1)
+        {
+          # Family versus Genus
+          if (moreInfo$taxonConcept$rankString == "family")
+          {
+            # Family
+            specificEpithet <- ""
+            genus <- ""
+            taxonAuthor <- moreInfo$taxonConcept$author
+            formattedAcceptedName <- paste(acceptedName, taxonAuthor)
+          }
+          else
+          {
+            # Genus
+            specificEpithet <- ""
+            genus <- moreInfo$classification$genus
+            taxonAuthor <- moreInfo$taxonConcept$author
+            formattedAcceptedName <- paste0("<i>", acceptedName, "</i> ", paste(acceptedName, taxonAuthor))
+          }
         }
         else
         {
-          # Genus
-          specificEpithet <- ""
+          # Species
+          specificEpithet = nameParts[2]
           genus <- moreInfo$classification$genus
           taxonAuthor <- moreInfo$taxonConcept$author
-          formattedAcceptedName <- paste0("<i>", acceptedName, "</i> ", paste(acceptedName, taxonAuthor))
+          formattedAcceptedName <- paste0("<i>", acceptedName, "</i> ", taxonAuthor)
         }
       }
-      else
-      {
-        # Species
-        specificEpithet = nameParts[2]
-        genus <- moreInfo$classification$genus
-        taxonAuthor <- moreInfo$taxonConcept$author
-        formattedAcceptedName <- paste0("<i>", acceptedName, "</i> ", taxonAuthor)
-      }
+
+      # Make a data.frame for return
+      checkResult <- data.frame(isValid = TRUE,
+                                isAccepted = thisTaxon == acceptedName,
+                                thisTaxon = thisTaxon,
+                                acceptedName = acceptedName,
+                                fullAcceptedName = fullAcceptedName,
+                                genus = genus,
+                                specificEpithet = specificEpithet,
+                                infraSpecificRank = infraSpecificRank,
+                                infraSpecificEpithet = infraSpecificEpithet,
+                                infraSpecificRankAbbrev = infraSpecificRankAbbrev,
+                                taxonAuthor = taxonAuthor,
+                                acceptedGUID = guid,
+                                acceptedFullGUID = acceptedFullGUID,
+                                formattedAcceptedName = formattedAcceptedName, #paste0("<i>", acceptedName, "</i> ", moreInfo$taxonConcept$author),
+                                taxonomicStatus = moreInfo$taxonConcept["taxonomicStatus"],
+                                taxonomicRank = moreInfo$taxonConcept$rankString,
+                                parentGUID = parentGUID,
+                                parentName = parentTaxonInfo$scientific_name,
+                                parentTaxonomicRank = parentTaxonInfo$rank,
+                                synonyms = synonyms,
+                                apcFamily = moreInfo$classification$family,
+                                alaCommonNames = paste(unlist(lapply(moreInfo$commonNames, function(el){el$nameString})), collapse = "; "),
+                                stringsAsFactors = FALSE)
+    }
+    else
+    {
+      if (!quiet) cat("  Is there a typographical error in thisTaxon?\n")
+
+      # prepare an empty data.frame for return
+      checkResult <- data.frame(isValid = FALSE,
+                                isAccepted = FALSE,
+                                searchName = searchName,
+                                acceptedName = "Not_accepted",
+                                fullAcceptedName = "Not_accepted",
+                                genus = "",
+                                specificEpithet = "",
+                                infraSpecificRank = "",
+                                infraSpecificEpithet = "",
+                                infraSpecificRankAbbrev = "",
+                                taxonAuthor = "",
+                                acceptedGUID = "",
+                                acceptedFullGUID = "",
+                                formattedAcceptedName = "",
+                                taxonomicStatus = "",
+                                taxonomicRank = "",
+                                parentGUID = "",
+                                parentName = "",
+                                parentTaxonomicRank = "",
+                                synonyms = "",
+                                apcFamily = "",
+                                alaCommonNames = "",
+                                stringsAsFactors = FALSE)
     }
 
-    # Make a data.frame for return
-    checkResult <- data.frame(isValid = TRUE,
-                              isAccepted = thisTaxon == acceptedName,
-                              thisTaxon = thisTaxon,
-                              acceptedName = acceptedName,
-                              fullAcceptedName = fullAcceptedName,
-                              genus = genus,
-                              specificEpithet = specificEpithet,
-                              infraSpecificRank = infraSpecificRank,
-                              infraSpecificEpithet = infraSpecificEpithet,
-                              infraSpecificRankAbbrev = infraSpecificRankAbbrev,
-                              taxonAuthor = taxonAuthor,
-                              acceptedGUID = guid,
-                              acceptedFullGUID = acceptedFullGUID,
-                              formattedAcceptedName = formattedAcceptedName, #paste0("<i>", acceptedName, "</i> ", moreInfo$taxonConcept$author),
-                              taxonomicStatus = moreInfo$taxonConcept["taxonomicStatus"],
-                              taxonomicRank = moreInfo$taxonConcept$rankString,
-                              parentGUID = parentGUID,
-                              parentName = parentTaxonInfo$scientific_name,
-                              parentTaxonomicRank = parentTaxonInfo$rank,
-                              synonyms = synonyms,
-                              apcFamily = moreInfo$classification$family,
-                              alaCommonNames = paste(unlist(lapply(moreInfo$commonNames, function(el){el$nameString})), collapse = "; "),
-                              stringsAsFactors = FALSE)
   }
   else
   {
