@@ -35,7 +35,7 @@
 #'
 #' @examples
 #' \dontrun{}
-checkthisTaxon <- function(thisTaxon = NULL, quiet = TRUE)
+checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
 {
   if (is.null(thisTaxon))
     stop("'thisTaxon' cannot be NULL: please supply a taxonomic name")

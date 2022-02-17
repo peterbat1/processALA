@@ -15,7 +15,7 @@ checkTaxonName(thisTaxon = NULL, quiet = TRUE)
 A one row data.frame the following elements:
 \item{isValid}{Logical. Is the searched for taxonomic name found as an entry in the APNI?}
 \item{isAccepted}{Logical. Is the searched for taxonomic name accepted by APC?}
-\item{taxonName}{Taxonomic name searched for.}
+\item{thisTaxon}{Taxonomic name searched for.}
 \item{acceptedName}{The accepted taxon name corresponding to the name searched for.}
 \item{fullAcceptedName}{Monomial/binomial/trinomial + author of the accepted taxon name.}
 \item{genus}{Genus name for specific and infraspecific ranks. Blank for a Family or higher taxonomic name search.}
