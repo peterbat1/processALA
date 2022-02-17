@@ -15,19 +15,27 @@ checkTaxonName(thisTaxon = NULL, quiet = TRUE)
 A one row data.frame the following elements:
 \item{isValid}{Logical. Is the searched for taxonomic name found as an entry in the APNI?}
 \item{isAccepted}{Logical. Is the searched for taxonomic name accepted by APC?}
-\item{searchName}{Taxonomic name searched for.}
+\item{taxonName}{Taxonomic name searched for.}
 \item{acceptedName}{The accepted taxon name corresponding to the name searched for.}
-\item{fullAcceptedName}{Binomial/trinomial + author of the accepted taxon name.}
+\item{fullAcceptedName}{Monomial/binomial/trinomial + author of the accepted taxon name.}
+\item{genus}{Genus name for specific and infraspecific ranks. Blank for a Family or higher taxonomic name search.}
+\item{specificEpithet}{Specific epithet for a spcies or infraspecies search. Blank otherwise.}
+\item{infraSpecificRank}{Taxonomic rank of an infra-specific taxon; blank for other ranks.}
+\item{infraSpecificEpithet}{Terminal or infra-specific epithet for a trinomial; blank for other taxonomic ranks.}
+\item{infraSpecificRankAbbrev}{Abbreviation used for an infra-specific rank; blank otherwise.}
 \item{acceptedGUID}{The ALA Globally Unique Identifier or GUID; a numeric string uniquely indexing a taxonomic concept in the Australian Plant Name Index (APNI) component of the National Species List (NSL). No match results in a GUID of "Not_accepted" being returned.}
 \item{acceptedFullGUID}{The full URL form of the GUID: stored as a convenience to speed calls to the ALA API, and assist maintence of code.}
 \item{formattedAcceptedName}{Full taxonomic name (i.e. binomial/trinomial + author) with simple HTML mark-up to italicise the binomial/trinomial part.}
+\item{taxonomicStatus}{Taxonomic status of the accepted name.}
 \item{taxonomicRank}{Taxonomic rank of the accepted name.}
 \item{parentGUID}{Full GUID of the taxonomic parent of the accepted taxon.}
 \item{parentName}{Name of the taxonomic parent of the accepted taxon.}
 \item{parentTaxonomicRank}{Taxonomic rank of the parent.}
 \item{synonyms}{A semi-colon separated list of taxonomic synonyms of the accepted taxon.}
 \item{apcFamily}{APC family of the accepted taxon.}
-\item{alaCommonNames}{Common names listed for the taxon on ALA.}
+\item{alaCommonNames}{Common names listed for the taxon according to ALA.}
+
+Class "taxonInfo" is appended to the returned object, but it remains 'functionally' a data.frame.
 }
 \description{
 Perform a systematic search of taxonomic resources to determine the status of the taxonomic name of a plant species using the resources of APNI and APC.
