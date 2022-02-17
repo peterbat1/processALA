@@ -9,7 +9,7 @@
 #' @return A one row data.frame the following elements:
 #' \item{isValid}{Logical. Is the searched for taxonomic name found as an entry in the APNI?}
 #' \item{isAccepted}{Logical. Is the searched for taxonomic name accepted by APC?}
-#' \item{taxonName}{Taxonomic name searched for.}
+#' \item{thisTaxon}{Taxonomic name searched for.}
 #' \item{acceptedName}{The accepted taxon name corresponding to the name searched for.}
 #' \item{fullAcceptedName}{Monomial/binomial/trinomial + author of the accepted taxon name.}
 #' \item{genus}{Genus name for specific and infraspecific ranks. Blank for a Family or higher taxonomic name search.}
@@ -35,7 +35,7 @@
 #'
 #' @examples
 #' \dontrun{}
-checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
+checkthisTaxon <- function(thisTaxon = NULL, quiet = TRUE)
 {
   if (is.null(thisTaxon))
     stop("'thisTaxon' cannot be NULL: please supply a taxonomic name")
@@ -45,9 +45,9 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
   # From this point on, make sure that references to genera are without a
   # trailing "sp." as this can lead to unexpected returns from name searches,
   # whereas searches on the pure genus name will always return clean results
-  taxonName <- trimws(sub("sp.$", "", trimws(taxonName)))
+  thisTaxon <- trimws(sub("sp.$", "", trimws(thisTaxon)))
 
-  ans_httr_species_search <- httr::content(httr::GET(paste0("http://bie.ala.org.au/ws/search.json?q=", taxonName)))
+  ans_httr_species_search <- httr::content(httr::GET(paste0("http://bie.ala.org.au/ws/search.json?q=", thisTaxon)))
 
   # Some search names appear to return NULL values in some fields, soe patch
   # them so that this don't fail later when the values in those fields are used
@@ -87,7 +87,7 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
     }
 
     # Now we filter the table to remove extraneous matches
-    goodInd <- grep(taxonName, allResults$name)
+    goodInd <- grep(thisTaxon, allResults$name)
     allResults <- allResults[goodInd, ]
 
     badInd <- grep("NZOR", allResults$guid)
@@ -96,8 +96,8 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
     synonymInd <- grep("SYNONYM|ACCEPTED", toupper(allResults$taxonomicStatus))
     if (length(synonymInd) > 0) allResults <- allResults[synonymInd, ]
 
-    taxonNameMatch <- grep(paste0("^", taxonName, "$"), allResults$scientificName)
-    allResults <- allResults[taxonNameMatch, ]
+    thisTaxonMatch <- grep(paste0("^", thisTaxon, "$"), allResults$scientificName)
+    allResults <- allResults[thisTaxonMatch, ]
 
     if (allResults[1, "taxonomicStatus"] == "accepted")
     {
@@ -206,8 +206,8 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
 
     # Make a data.frame for return
     checkResult <- data.frame(isValid = TRUE,
-                              isAccepted = taxonName == acceptedName,
-                              taxonName = taxonName,
+                              isAccepted = thisTaxon == acceptedName,
+                              thisTaxon = thisTaxon,
                               acceptedName = acceptedName,
                               fullAcceptedName = fullAcceptedName,
                               genus = genus,
@@ -236,7 +236,7 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
 
     checkResult <- data.frame(isValid = FALSE,
                               isAccepted = FALSE,
-                              taxonName = taxonName,
+                              thisTaxon = thisTaxon,
                               acceptedName = "Not_accepted",
                               fullAcceptedName = "Not_accepted",
                               genus = "",
