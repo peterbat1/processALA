@@ -8,4 +8,6 @@
 #' @import galah
 #' @importFrom httr GET
 #' @importFrom dplyr bind_rows
+#' @importFrom utils read.csv write.csv
+#' @importFrom sp SpatialPointsDataFrame over
 NULL

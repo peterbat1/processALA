@@ -34,7 +34,13 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{}
+#' \dontrun{
+#' ### Search a valid name
+#' ans <- checkTaxonName("Acacia linifolia")
+#'
+#' ### Search for a clearly innvalid name
+#' ans <- checkTaxonName("Greenus plantus")
+#'   }
 checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
 {
   if (is.null(thisTaxon))
@@ -47,7 +53,8 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
   # whereas searches on the pure genus name will always return clean results
   thisTaxon <- trimws(sub("sp.$|spp.$", "", trimws(thisTaxon)))
 
-  ans_httr_species_search <- httr::content(httr::GET(paste0("http://bie.ala.org.au/ws/search.json?q=", thisTaxon)))
+  #ans_httr_species_search <- httr::content(httr::GET(paste0("http://bie.ala.org.au/ws/search.json?q=", thisTaxon)))
+  ans_httr_species_search <- httr::content(httr::GET("http://bie.ala.org.au/", path = "ws/search.json", query = list(q = thisTaxon)))
 
   # Some search names appear to return NULL values in some fields, soe patch
   # them so that this don't fail later when the values in those fields are used
@@ -222,7 +229,7 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
       # Make a data.frame for return
       checkResult <- data.frame(isValid = TRUE,
                                 isAccepted = thisTaxon == acceptedName,
-                                thisTaxon = thisTaxon,
+                                searchName = thisTaxon,
                                 acceptedName = acceptedName,
                                 fullAcceptedName = fullAcceptedName,
                                 genus = genus,
@@ -251,7 +258,7 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
       # prepare an empty data.frame for return
       checkResult <- data.frame(isValid = FALSE,
                                 isAccepted = FALSE,
-                                searchName = searchName,
+                                searchName = thisTaxon,
                                 acceptedName = "Not_accepted",
                                 fullAcceptedName = "Not_accepted",
                                 genus = "",
@@ -282,7 +289,7 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
 
     checkResult <- data.frame(isValid = FALSE,
                               isAccepted = FALSE,
-                              thisTaxon = thisTaxon,
+                              searchName = thisTaxon,
                               acceptedName = "Not_accepted",
                               fullAcceptedName = "Not_accepted",
                               genus = "",

@@ -6,13 +6,16 @@ Authors@R: person("Peter D.", "Wilson", email = "peter.d.wilson@rbgsyd.nsw.gov.a
 Maintainer: Peter D. Wilson <peterdonaldwilson@gmail.com>
 Description: A set of functions to fetch, filter and clean plant occurrence records from the Atlas of Living Australia (ALA)
     Filtered and cleaned data are written to csv-formatted text files for subsequent use. Three output files may be produced: herbarium records, human observations, and records from systematic vegetation surveys which are part of the NSW Vegetation Information System (VIS).
-Depends: R (>= 3.5)
-Imports: ALA4R,
-    sp
+Depends: R (>= 4.1)
+Imports: sp,
+  sf,
+  dplyr,
+  galah,
+  httr
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.1
 Suggests: 
     knitr,
     rmarkdown

@@ -41,5 +41,11 @@ Class "taxonInfo" is appended to the returned object, but it remains 'functional
 Perform a systematic search of taxonomic resources to determine the status of the taxonomic name of a plant species using the resources of APNI and APC.
 }
 \examples{
-\dontrun{}
+\dontrun{
+### Search a valid name
+ans <- checkTaxonName("Acacia linifolia")
+
+### Search for a clearly innvalid name
+ans <- checkTaxonName("Greenus plantus")
+  }
 }

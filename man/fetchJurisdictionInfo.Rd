@@ -43,10 +43,10 @@ The status of a taxon may have one of the following values:
 \item{formerly naturalised}{Taxon was naturalised but is now no longer considered present}
 \item{presumed extinct}{Taxon did occur naturally but is now conidered extinct within the jurisdiction}
 \item{NA}{There is no record of the taxon from the jurisdiction}
-This function may be called independently for fun or profit, but its main role is to support the filtering of records by the function \code{\link{filterALA}}.
+This function may be called independently for fun or profit, but its main role is to support the filtering of records by the function \code{\link{filterALAdata}}.
 }
 \description{
-Makes calls to the Atlas of Living Australia (ALA) API to obtain information on the Australian states and territores a species has been accepted by experts to occur. These data are part of the Australian Plant Census (APC), here they are used to perform a stage of ALA occurrence record filtering in the function \code{\link{filterALAdata}}.
+Makes calls to the Atlas of Living Australia (ALA) API to obtain information on the Australian states and territories a species has been accepted by experts to occur. These data are part of the Australian Plant Census (APC), here they are used to perform a stage of ALA occurrence record filtering in the function \code{\link{filterALAdata}}.
 }
 \examples{
 \dontrun{

@@ -49,7 +49,7 @@
 #'                  removeMissingCoordinates = FALSE, filterByJusrisdication = FALSE,
 #'                  filterCultivated = FALSE)}
 filterALAdata <- function(taxa = NULL,
-                          baseDataPath = defaultOutputFolder,
+                          baseDataPath = "", #defaultOutputFolder,
                           recType = c("herbariumRecords", "humanObservations", "surveyRecords"),
                           removeDuplicates = TRUE,
                           removeMissingCoords = TRUE,

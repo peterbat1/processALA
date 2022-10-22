@@ -120,16 +120,19 @@ Here are some quick examples of calls to _checkTaxonName()_ resulting in each st
 ### FALSE : FALSE
 ```{r}
 ans <- checkTaxonName("Greenus plantus")
+ans
 ```
 
 ### TRUE : FALSE
 ```{r}
 ans <- checkTaxonName("Acacia abietina")
+ans
 ```
 
 ### TRUE : TRUE
 ```{r}
 ans <- checkTaxonName("Acacia linifolia")
+ans
 ```
 
 Hopefully you can see the potential for using the information returned by _checkTaxonName()_. For example:
