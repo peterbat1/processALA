@@ -151,6 +151,13 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
 
         if (length(synonym_ind) > 0)
         {
+          # Sometimes, "nomen illegalum" entries are included in the results indexed
+          # by synonym_ind. We need to weed them out:
+          noname_ind <- which(unlist(lapply(name_search$searchResults$results, function(el){grepl("nom. illeg.", el$nomenclaturalStatus)})))
+
+          if (length(noname_ind) > 0)
+            synonym_ind <- synonym_ind[-which(synonym_ind == noname_ind)]
+
           if (!quiet)
           {
             cat("  Accepted concept name : ", name_search$searchResults$results[[synonym_ind]]$acceptedConceptName, "\n")
@@ -170,7 +177,6 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
         }
       }
 
-      cat("WHY?\n")
       # Run search using accepted GUID to gather all necessary info including parent info and synonyms
       guid_search <- httr::content(httr::GET("http://bie.ala.org.au/", path = paste0("ws/species/", acceptedFullGUID, ".json")))
 
