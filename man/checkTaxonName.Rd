@@ -34,6 +34,7 @@ A one row data.frame the following elements:
 \item{synonyms}{A semi-colon separated list of taxonomic synonyms of the accepted taxon.}
 \item{apcFamily}{APC family of the accepted taxon.}
 \item{alaCommonNames}{Common names listed for the taxon according to ALA.}
+\item{inferredAcceptedInfo}{Summary of information on 'inferredAccepted' names; these are names which are retained in APNI because they are listed in statutory instruments in one or more jurisdictions within Australia, and are therfore associated with occurrence and other data.}
 
 Class "taxonInfo" is appended to the returned object, but it remains 'functionally' a data.frame.
 }
