@@ -135,7 +135,7 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
       }
       else
       {
-        inferred_info <- "No_data"
+        inferred_info <- ""
       }
 
       accepted_taxon_ind <- which(unlist(lapply(name_search$searchResults$results,
