@@ -129,6 +129,7 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
           inferred_info <- c(inferred_info, paste0(name_search$searchResults$results[[ii]]$scientificName, "; Source: ",
                                                    name_search$searchResults$results[[ii]]$infoSourceName, "; Common name: ",
                                                    name_search$searchResults$results[[ii]]$commonName))
+        inferred_info <- paste(inferred_info, collapse = ", ")
         name_search$searchResults$results <- name_search$searchResults$results[-inferred_ind]
       }
       else
