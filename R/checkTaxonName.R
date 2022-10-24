@@ -59,8 +59,9 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
   checkResult <- data.frame(isValid = FALSE,
                             isAccepted = FALSE,
                             searchName = thisTaxon,
-                            acceptedName = "Not_accepted",
-                            fullAcceptedName = "Not_accepted",
+                            searchName_taxonomicStatus = "Not accepted",
+                            acceptedName = "",
+                            fullAcceptedName = "",
                             genus = "",
                             specificEpithet = "",
                             infraSpecificRank = "",
@@ -174,7 +175,12 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
         else
         {
           # Nothing could be recovered
-          if (!quiet) cat("  Nothing found: empty result returned\n")
+          if (!quiet) cat("  No fully accepted taxon found: empty result returned with possibly inferred accepted information\n")
+          if (inferred_info != "")
+          {
+            checkResult[1, "inferredAcceptedInfo"] <- inferred_info
+            checkResult[1, "searchName_taxonomicStatus"] = "Inferred accepted"
+          }
           return(invisible(checkResult))
         }
       }
@@ -281,6 +287,7 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
       checkResult <- data.frame(isValid = TRUE,
                                 isAccepted = thisTaxon == acceptedName,
                                 searchName = thisTaxon,
+                                searchName_taxonomicStatus = "Accepted",
                                 acceptedName = acceptedName,
                                 fullAcceptedName = fullAcceptedName,
                                 genus = genus,
