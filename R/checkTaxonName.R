@@ -109,7 +109,7 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
     {
       if (!quiet) cat("  No results returned from name search: empty result returned\n")
 
-      invisible(checkResult)
+      return(invisible(checkResult))
     }
     else
     {
@@ -129,6 +129,7 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
           inferred_info <- c(inferred_info, paste0(name_search$searchResults$results[[ii]]$scientificName, "; Source: ",
                                                    name_search$searchResults$results[[ii]]$infoSourceName, "; Common name: ",
                                                    name_search$searchResults$results[[ii]]$commonName))
+        name_search$searchResults$results <- name_search$searchResults$results[-inferred_ind]
       }
       else
       {
@@ -151,23 +152,28 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
 
         if (length(synonym_ind) > 0)
         {
-          # Sometimes, "nomen illegalum" entries are included in the results indexed
-          # by synonym_ind. We need to weed them out:
-          noname_ind <- which(unlist(lapply(name_search$searchResults$results, function(el){grepl("nom. illeg.", el$nomenclaturalStatus)})))
+          # There may be several types of entry remaining in the results
+          # representing various types of synonyms. The focus for this function is
+          # to find the correct accepted taxon concept GUID which may be used to
+          # gather relevant information including a full account of synonyms etc.
+          # So, we focus now on those results whose "name" matches the search name
+          # passed in thisTaxon
+          name_match_ind <- which(unlist(lapply(name_search$searchResults$results, function (el){el$name == thisTaxon})))
 
-          if (length(noname_ind) > 0)
-            synonym_ind <- synonym_ind[-which(synonym_ind == noname_ind)]
-
-          if (!quiet)
+          if (length(name_match_ind) > 0)
           {
-            cat("  Accepted concept name : ", name_search$searchResults$results[[synonym_ind]]$acceptedConceptName, "\n")
-            cat("  Accepted concept GUID : ", name_search$searchResults$results[[synonym_ind]]$acceptedConceptID, "\n")
-          }
+            # There may be more than one matching item, so choose just the first index
+            # and use that to extract a value for acceptedFullGUID
+            acceptedFullGUID <- name_search$searchResults$results[[name_match_ind[1]]]$acceptedConceptID
+            tmp <- strsplit(acceptedFullGUID, "/")
+            guid <- tmp[[1]][length(tmp[[1]])]
 
-          # Get details of the accepted taxon...
-          acceptedFullGUID <- name_search$searchResults$results[[synonym_ind]]$acceptedConceptID
-          tmp <- strsplit(acceptedFullGUID, "/")
-          guid <- tmp[[1]][length(tmp[[1]])]
+            if (!quiet)
+            {
+              cat("  Accepted concept name : ", name_search$searchResults$results[[name_match_ind[1]]]$acceptedConceptName, "\n")
+              cat("  Accepted concept GUID : ", acceptedFullGUID, "\n")
+            }
+          }
         }
         else
         {
