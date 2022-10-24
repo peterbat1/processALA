@@ -148,31 +148,26 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
       }
       else
       {
-        synonym_ind <- which(unlist(lapply(name_search$searchResults$results, function(el){grepl("heterotypicSynonym|homotypicSynonym", el$taxonomicStatus)})))
+        # There may be several types of entry remaining in the results
+        # representing various types of synonyms. The focus for this function is
+        # to find the correct accepted taxon concept GUID which may be used to
+        # gather relevant information including a full account of synonyms etc.
+        # So, we focus now on those results whose "name" matches the search name
+        # passed in thisTaxon
+        name_match_ind <- which(unlist(lapply(name_search$searchResults$results, function (el){el$name == thisTaxon})))
 
-        if (length(synonym_ind) > 0)
+        if (length(name_match_ind) > 0)
         {
-          # There may be several types of entry remaining in the results
-          # representing various types of synonyms. The focus for this function is
-          # to find the correct accepted taxon concept GUID which may be used to
-          # gather relevant information including a full account of synonyms etc.
-          # So, we focus now on those results whose "name" matches the search name
-          # passed in thisTaxon
-          name_match_ind <- which(unlist(lapply(name_search$searchResults$results, function (el){el$name == thisTaxon})))
+          # There may be more than one matching item, so choose just the first index
+          # and use that to extract a value for acceptedFullGUID
+          acceptedFullGUID <- name_search$searchResults$results[[name_match_ind[1]]]$acceptedConceptID
+          tmp <- strsplit(acceptedFullGUID, "/")
+          guid <- tmp[[1]][length(tmp[[1]])]
 
-          if (length(name_match_ind) > 0)
+          if (!quiet)
           {
-            # There may be more than one matching item, so choose just the first index
-            # and use that to extract a value for acceptedFullGUID
-            acceptedFullGUID <- name_search$searchResults$results[[name_match_ind[1]]]$acceptedConceptID
-            tmp <- strsplit(acceptedFullGUID, "/")
-            guid <- tmp[[1]][length(tmp[[1]])]
-
-            if (!quiet)
-            {
-              cat("  Accepted concept name : ", name_search$searchResults$results[[name_match_ind[1]]]$acceptedConceptName, "\n")
-              cat("  Accepted concept GUID : ", acceptedFullGUID, "\n")
-            }
+            cat("  Accepted concept name : ", name_search$searchResults$results[[name_match_ind[1]]]$acceptedConceptName, "\n")
+            cat("  Accepted concept GUID : ", acceptedFullGUID, "\n")
           }
         }
         else
