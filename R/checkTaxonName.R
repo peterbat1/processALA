@@ -287,7 +287,7 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
       checkResult <- data.frame(isValid = TRUE,
                                 isAccepted = thisTaxon == acceptedName,
                                 searchName = thisTaxon,
-                                searchName_taxonomicStatus = "Accepted",
+                                searchName_taxonomicStatus = ifelse(thisTaxon == acceptedName, "Accepted", "Synonym"),
                                 acceptedName = acceptedName,
                                 fullAcceptedName = fullAcceptedName,
                                 genus = genus,
