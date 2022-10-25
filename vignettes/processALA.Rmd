@@ -29,7 +29,7 @@ To install the package in your local _**R**_ installation, it is easiest to ensu
 * dplyr
 * ozmaps (for running the worked example in this vignette)
 
-It is most productive to install these packages using the package management features in R-Studio as they pull in a fair number of dependencies and it is a pain to work through that list manually before you finally install the target package.
+It is most productive to install these packages using the package management features in *R-Studio* as they pull in a fair number of dependencies and it is a pain to work through that list manually before you finally install the target package.
 
 To complete the installation of **processALA**, ensure that the package **remotes** is installed from CRAN, then enter the following command at the prompt in the _**R**_ console:
 
@@ -48,12 +48,12 @@ library(processALA)
 The Atlas of Living Australia is many things:
 
 * A gateway to a comprehensive collection of occurrence records of many types including herbarium records from Australia and New Zealand supplied by Australia's Virtual Herbarium (which is hosted by ALA)
-* The source of an accepted National Species List, and repository of taxonomic and nomenclatural information which for plants is formed by the Australian Plant Name Index (APNI) and the Australian Plant Census (APC) hosted by ALA on behalf of the Council of Heads of Australasian Herbaria (CHAH)
+* The source of an accepted National Species List, and repository of taxonomic and nomenclatural information which, for plants, is formed by the Australian Plant Name Index (APNI) and the Australian Plant Census (APC) hosted by ALA on behalf of the Council of Heads of Australasian Herbaria (CHAH)
 * The Australian node of the Global Biodiversity Information Facility (GBIF)
 
-ALA is an important source of occurrence data and taxonomic information which can be accessed through a web interface. However, for many researchers this can be cumbersome, particularly when many taxa must be processed. Fortunately ALA also provides an API or Application Programming Interface which lets you perform searches and retrieve records using scripts. This makes it easier to process lists of taxa or make periodic updates of information. You can find out more about the ALA API [here](https://api.ala.org.au).
+ALA is an important source of occurrence data and taxonomic information which can be accessed through a web interface. However, for many researchers this can be cumbersome, particularly when many taxa must be processed. Fortunately, ALA also provides an API or Application Programming Interface which lets you perform searches and retrieve records using scripts. This makes it easier to process lists of taxa or make periodic updates of information. You can find out more about the ALA API [here](https://api.ala.org.au).
 
-ALA also maintains an _**R**_-package, **galah**, to make it very easy to use the ALA API. The functions within that package allow us to make use of the API without having to learn the ins and outs of composing query strings and the application of web access tools such as _curl_ and _wget_. (Of course, if you're into such things there are fun times ahead for you if you want to work directly with curl or wget calls.)
+ALA also maintains an _**R**_-package, **galah**, to make it very easy to use the ALA API. The functions within that package allow us to make use of the API without having to learn the ins and outs of composing query strings and the application of web access tools such as _curl_ and _wget_. (Of course, if you're into such things there are fun times ahead if you want to work directly with curl or wget calls.)
 
 The package **processALA** adds another level of refinement. It highly automates key steps in the retrieval and processing of ALA data by utilising a few key functions in the **galah** package and adds functions to assist in data cleaning. In addition, it adds a mechanism to access some ALA API functions not exposed in **galah**.
 
@@ -69,7 +69,7 @@ Three key functions in **processALA** have been designed to implement each step.
 * *fetchALAdata()* and
 * *filterALAdata()*
 
-The focus of this vignette is to guide you in applying them to fetching occurrence records and making them fit for further use.
+The focus of this vignette is to guide you in applying them to obtaining taxonomic information, fetching occurrence records and making them fit for further use.
 
 ## Handling taxonomic names
 
@@ -95,6 +95,7 @@ Element | Data type and contents
 isValid | Logical. Is the taxonomic name found in the Australian Plant Name Index (APNI); to be listed in APNI a taxonomic name must have been formally defined and applied in a publication to collected material.
 isAccepted | Logical. Is the searched for taxonomic name accepted by the Australian Plant Census (APC) as an accepted name associated with a taxonomic concept.
 searchName | Character (string). Taxonomic name searched for.
+searchName_taxonomicStatus | Character (string). Taxonomic status of the name you searched on. This may be: "Accepted", "Inferred accepted", "Not accepted", "Synonym".
 acceptedName | Character (string). The accepted taxon name corresponding to the name searched for.
 fullAcceptedName | Character (string). Binomial/trinomial + author of the accepted taxon name.
 acceptedGUID | Character (string). The ALA Globally Unique Identifier or GUID; a numeric string uniquely indexing a taxonomic concept in the Australian Plant Name Index (APNI) component of the National Species List (NSL). No match results in a GUID of "Not_accepted" being returned.
@@ -106,6 +107,8 @@ parentName | Character (string). Name of the taxonomic parent of the accepted ta
 parentTaxonomicRank | Character (string). Taxonomic rank of the parent.
 synonyms | Character (string). A semi-colon separated list of taxonomic synonyms of the accepted taxon.
 apcFamily | Character (string). Family of the accepted taxon according to APC.
+alaCommonNames | Character (string). Shows any common names listed by ALA.
+inferredAcceptedInfo | Character (string). Shows Name, Source of information and Common names for all taxa associated with the search name or synonyms of the accepted taxon concept.
 
 A name is "valid" in the sense used for **processALA** when it is found in an APNI record. However, the name you search on may not be the name which is currently applied to the taxon according to APC. APC lists _formally accepted_ taxonomic names whereas APNI lists all published names associated with the currently accepted name listed on APC. Thus, we can be in one of three states after a call to _checkTaxonName()_ based on the logical flags _isValid_ and _isAccepted_:
 
@@ -167,7 +170,7 @@ As a final point, note that image and living specimen data are not currently ext
 
 ## Filtering/cleaning ALA data
 
-ALA data is _**dirty**_ data! ALA is just a data aggregation service and web portal transmitting the data as received from data providers. ALA does perform data quality checks and flags as many possible errors as it can, but the data remain as supplied and may include a range of errors. It is up to the end users to either use the quality flags raised by ALA or, preferably, do additional checks to arrive at the cleanest occurrence data possible.
+ALA data is _**dirty**_ data! ALA is just a data aggregation service and web portal transmitting the data as received from data providers. ALA does perform data quality checks and flags as many possible errors as it can, but the data remain as supplied and may include a range of errors which must be addressed before that data can be used with confidence. It is up to the end users to either use the quality flags raised by ALA or, preferably, do additional checks to arrive at the cleanest occurrence data possible.
 
 > **It is absolutely essential that you perform data cleaning or filtering before using ALA occurrence data.**
 
