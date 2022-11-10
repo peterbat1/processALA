@@ -1,7 +1,7 @@
 Package: processALA
 Type: Package
 Title: Fetch and Filter ALA Occurrence Data for Plants
-Version: 0.5.2
+Version: 0.5.4
 Authors@R: person("Peter D.", "Wilson", email = "peter.d.wilson@rbgsyd.nsw.gov.au", role = c("aut", "cre"))
 Maintainer: Peter D. Wilson <peterdonaldwilson@gmail.com>
 Description: A set of functions to fetch, filter and clean plant occurrence records from the Atlas of Living Australia (ALA)

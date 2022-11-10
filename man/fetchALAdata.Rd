@@ -6,6 +6,7 @@
 \usage{
 fetchALAdata(
   taxonList = NULL,
+  taxonID = NULL,
   baseOutputPath = defaultOutputFolder,
   theseFields = "",
   doNameCheck = TRUE,
@@ -14,7 +15,9 @@ fetchALAdata(
 )
 }
 \arguments{
-\item{taxonList}{A character vector holding a set of taxon names to be processed.}
+\item{taxonList}{A character vector holding a set of taxon names to be processed. Ignored if taxon identifiers are supplied.}
+
+\item{taxonID}{A character vector of FULL taxon GUIDs. See Details.}
 
 \item{baseOutputPath}{Character string. A path to the base folder into which output will be written. An attempt will be made to create the path to the base folder if does not already exist. A sub-folder named for each taxon in taxonList will be created and dowloaded files written into it.}
 
@@ -46,6 +49,12 @@ These files can be used for whatever purpose you have mind, or they can be passe
 Occurrence fields: The parameter \emph{theseFields} allows you to specify the occurrence fields to be supplied in the resulting data table. The default is set to a list of fields which have proven useful in post-processing plant occurrence records. The list of available fields is long and includes many options which you may wish to use in your own spin on filtering and processing the resulting data table.
 
 See help for \link{showOccFields} for information on available fields and their definitions.
+
+If taxon identifiers (GUIDs) are supplied in parameter \emph{taxonID}, they must be the FULL identifier specified for ALA taxa. For plant taxa, this counter-intuitively has the form of a URL.
+
+For example, the full GUID for \emph{Acacia linifolia} is "https://id.biodiversity.org.au/node/apni/2906316"
+
+If you have used \code{\link{checkTaxonName}}, then the full GUID is available in the field "acceptedFullGUID". Alternatively, you can use galah::galah_identify() to obtained this information.
 }
 }
 \examples{

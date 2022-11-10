@@ -6,7 +6,7 @@
 #' @param thisTaxon Character object holding the name for which a search is to be made.
 #' @param quiet Logical. If TRUE progress messages are written to the console; if FALSE (default) then progress messages are suppressed.
 #'
-#' @return A one row data.frame the following elements:
+#' @return A one row data.frame with the following elements:
 #' \item{isValid}{Logical. Is the searched for taxonomic name found as an entry in the APNI?}
 #' \item{isAccepted}{Logical. Is the searched for taxonomic name accepted by APC?}
 #' \item{thisTaxon}{Taxonomic name searched for.}
@@ -22,6 +22,7 @@
 #' \item{formattedAcceptedName}{Full taxonomic name (i.e. binomial/trinomial + author) with simple HTML mark-up to italicise the binomial/trinomial part.}
 #' \item{taxonomicStatus}{Taxonomic status of the accepted name.}
 #' \item{taxonomicRank}{Taxonomic rank of the accepted name.}
+#' \item{totalRecords}{Number of occurrence records reported by ALA for the accepted taxon.}
 #' \item{parentGUID}{Full GUID of the taxonomic parent of the accepted taxon.}
 #' \item{parentName}{Name of the taxonomic parent of the accepted taxon.}
 #' \item{parentTaxonomicRank}{Taxonomic rank of the parent.}
@@ -73,6 +74,7 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
                             formattedAcceptedName = "",
                             taxonomicStatus = "",
                             taxonomicRank = "",
+                            totalRecords = 0,
                             parentGUID = "",
                             parentName = "",
                             parentTaxonomicRank = "",
@@ -87,6 +89,10 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
 
   # Perform a basic search on the name passed in thisTaxon
   name_search <- httr::content(httr::GET("http://bie.ala.org.au/", path = "ws/search.json", query = list(q = thisTaxon)))
+
+  # Trap completely NULL result
+  if (name_search$searchResults$totalRecords == 0)
+    return(checkResult)
 
   # Searching by "name" can, and will!!!, return totally non-biological results
   # such as a geographical entities which vaguely match (fully or partially)
@@ -130,7 +136,7 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
           inferred_info <- c(inferred_info, paste0(name_search$searchResults$results[[ii]]$scientificName, "; Source: ",
                                                    name_search$searchResults$results[[ii]]$infoSourceName, "; Common name: ",
                                                    name_search$searchResults$results[[ii]]$commonName))
-        inferred_info <- paste(inferred_info, collapse = ", ")
+        inferred_info <- paste(inferred_info, collapse = "| ")
         name_search$searchResults$results <- name_search$searchResults$results[-inferred_ind]
       }
       else
@@ -283,6 +289,15 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
         }
       }
 
+      # Fetch record count:
+      # Base URL for record counts from galah 1.5.1 source
+      count_base_url <- "https://biocache-ws.ala.org.au/ws/occurrences/search"
+
+      # and it can be applied using this hack from tracing through the Gothic labyrinth that is galah source code!!!!
+      # As you can see, the form of the query bears no resemblance to the API documentation on the ALA website...AGAIN....
+      record_count_url <- paste0(count_base_url, "?fq=(lsid:", acceptedFullGUID, ")&disableAllQualityFilters=true&pageSize=0")
+      totalRecords <- httr::content(httr::GET(record_count_url))$totalRecords
+
       # Make a data.frame for return
       checkResult <- data.frame(isValid = TRUE,
                                 isAccepted = thisTaxon == acceptedName,
@@ -300,6 +315,7 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
                                 acceptedFullGUID = acceptedFullGUID,
                                 formattedAcceptedName = formattedAcceptedName, #paste0("<i>", acceptedName, "</i> ", moreInfo$taxonConcept$author),
                                 taxonomicStatus = guid_search$taxonConcept["taxonomicStatus"],
+                                totalRecords = totalRecords,
                                 taxonomicRank = guid_search$taxonConcept$rankString,
                                 parentGUID = parentGUID,
                                 parentName = parentTaxonInfo$scientific_name,

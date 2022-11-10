@@ -12,7 +12,7 @@ checkTaxonName(thisTaxon = NULL, quiet = TRUE)
 \item{quiet}{Logical. If TRUE progress messages are written to the console; if FALSE (default) then progress messages are suppressed.}
 }
 \value{
-A one row data.frame the following elements:
+A one row data.frame with the following elements:
 \item{isValid}{Logical. Is the searched for taxonomic name found as an entry in the APNI?}
 \item{isAccepted}{Logical. Is the searched for taxonomic name accepted by APC?}
 \item{thisTaxon}{Taxonomic name searched for.}
@@ -28,6 +28,7 @@ A one row data.frame the following elements:
 \item{formattedAcceptedName}{Full taxonomic name (i.e. binomial/trinomial + author) with simple HTML mark-up to italicise the binomial/trinomial part.}
 \item{taxonomicStatus}{Taxonomic status of the accepted name.}
 \item{taxonomicRank}{Taxonomic rank of the accepted name.}
+\item{totalRecords}{Number of occurrence records reported by ALA for the accepted taxon.}
 \item{parentGUID}{Full GUID of the taxonomic parent of the accepted taxon.}
 \item{parentName}{Name of the taxonomic parent of the accepted taxon.}
 \item{parentTaxonomicRank}{Taxonomic rank of the parent.}
