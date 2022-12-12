@@ -121,7 +121,8 @@ fetchJurisdictionInfo <- function(thisTaxon = NULL, trace = FALSE)
       }
       else
       {
-        newData[1, "isNaturalised"] <- any(grepl("NATURALISED", toupper(APC_distribution_str)))
+        isNaturalised <- any(grepl("NATURALISED", toupper(APC_distribution_str)))
+        newData[1, "isNaturalised"] <- isNaturalised
         regionInfo <- unlist(strsplit(APC_distribution_str, ", "))
 
         # Find entries which are without a qualifier. They are presumed to be
