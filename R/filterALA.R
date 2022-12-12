@@ -138,8 +138,8 @@ filterALAdata <- function(taxa = NULL,
       }
 
       # Find coordinate columns
-      longitudeCol <- grep("decimalLongitudeWGS84", colnames(theRecords))[1]
-      latitudeCol <- grep("decimalLatitudeWGS84", colnames(theRecords))[1]
+      longitudeCol <- grep("LONGITUDE", toupper(colnames(theRecords)))[1]
+      latitudeCol <- grep("LATITUDE", toupper(colnames(theRecords)))[1]
 
       if (trace)
       {
