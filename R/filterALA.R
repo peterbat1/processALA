@@ -168,7 +168,7 @@ filterALAdata <- function(taxa = NULL,
 
       if (grepl(toupper(recType), "SURVEYRECORDS"))
       {
-        theRecords <- theRecords[grep("SURVEY", toupper(theRecords$datasetName))]
+        theRecords <- theRecords[grep("SURVEY", toupper(theRecords$datasetName)), ]
 
         if (trace) cat(" Found", nrow(theRecords), "NSW veg. survey records.\n")
         if (nrow(theRecords) == 0) stop(paste0("No survey records in the data file '", inFilename, "'"))
