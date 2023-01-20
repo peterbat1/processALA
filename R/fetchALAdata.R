@@ -12,8 +12,8 @@
 #'
 #' @param taxonList A character vector holding a set of taxon names to be processed. Ignored if taxon identifiers are supplied.
 #' @param taxonID A character vector of FULL taxon GUIDs. See Details.
-#' @param baseOutputPath Character string. A path to the base folder into which output will be written. An attempt will be made to create the path to the base folder if does not already exist. A sub-folder named for each taxon in taxonList will be created and dowloaded files written into it.
-#' @param theseFields Character vector. A set of ALA occurrence field names to be returned in the API 'GET' call. The default is a set suited to post-processing of plant occurrence records. See Details below.
+#' @param baseOutputPath Character string. A path to the base folder into which output will be written. An attempt will be made to create the path to the base folder if does not already exist. A sub-folder named for each taxon in \emph{taxonList} will be created and dowloaded files written into it.
+#' @param theseFields Character vector. A set of ALA occurrence field names to be returned in the ALA API 'GET' call. The default is a set suited to post-processing of plant occurrence records. See Details below.
 #' @param doNameCheck Logical. Should a check of taxonomic names be performed? Default is TRUE; if FALSE, then it is assumed that names are valid and accepted as reported by \code{\link{checkTaxonName}}.
 #' @param ALA_registered_email Character string. Email address registered with ALA for occurrence data downloads.
 #' @param verbose Logical. Should additional progress messages be produced?
@@ -27,7 +27,7 @@
 #' \item raw human observation data
 #' \item raw NSW Vegetation Survey data (extracted from the human observation records using a cunning bit of jiggery-pokery)}
 #'
-#' These files can be used for whatever purpose you have mind, or they can be passed through the companion function \code{\link{filterALAdata}} to make a first pass at cleaning the data. Let me perfectly frank, \emph{ALA data is full of detritus and needs to be thoroughly cleaned before use!}
+#' These files can be used for whatever purpose you have mind, or they can be passed through the companion function \code{\link{filterALAdata}} to make a first pass at cleaning the data. Let me be perfectly frank: \emph{ALA data is full of detritus and needs to be thoroughly cleaned before use!}
 #'
 #' Occurrence fields: The parameter \emph{theseFields} allows you to specify the occurrence fields to be supplied in the resulting data table. The default is set to a list of fields which have proven useful in post-processing plant occurrence records. The list of available fields is long and includes many options which you may wish to use in your own spin on filtering and processing the resulting data table.
 #'
@@ -73,14 +73,14 @@ fetchALAdata <- function(taxonList = NULL,
   if (theseFields == "")
     theseFields <- stdFields
 
-  galah::galah_config(verbose = verbose)
+  if (!all(theseFields %in% showOccFields()[, "id"]))
+  {
+    bad_ind <- which(!(theseFields %in% showOccFields()[, "id"]))
+    stop(paste0("The following field names passed in 'theseFields' are not valid: ", paste(theseFields[bad_ind], collapse = ", "),". Call showOccFields() to check & correct names."))
+  }
 
-  badFieldnameInd <- which(!(theseFields %in% showOccFields()[, "downloadName"]))
-  if (length(badFieldnameInd) > 0)
-    stop(paste0("The following field names passed in 'theseFields' are not valid: ", paste(theseFields[badFieldnameInd], collpase = ", "),". Call showOccFields() to check & correct names."))
-
-  if ((galah::galah_config()$email == "") & (ALA_registered_email == ""))
-    stop("You must either run galah_config() to set an ALA-registered email address, or supplied one via parameter 'ALA_registered_email'")
+  if ((galah::galah_config()$user$email == "") & (ALA_registered_email == ""))
+    stop("You must either run galah_config() to set an ALA-registered email address, or supply one via parameter 'ALA_registered_email'")
 
   cat("Fetch ALA occurrence data for a set of species\n==============================================\n")
 
@@ -98,7 +98,7 @@ fetchALAdata <- function(taxonList = NULL,
     {
       cat("\nThe following names were not accepted by ALA and will be skipped:", paste(taxonList[accepted == FALSE], collapse = ", "), "\n")
       taxonList <- taxonList[-which(!accepted)]
-      taxonID <- acceptedGUIDS[-which(!accepted)]
+      acceptedGUIDS <- acceptedGUIDS[-which(!accepted)]
       if (length(taxonList) == 0) stop("There are no taxa left to process")
     }
 
@@ -108,9 +108,9 @@ fetchALAdata <- function(taxonList = NULL,
   # OK, we got this far, so now for the downloads...
   cat("  Processing:\n")
 
-  for (thisTaxonID in taxonID)
+  for (thisTaxonID in acceptedGUIDS)
   {
-    thisTaxon <- taxonList[which(taxonID == thisTaxonID)]
+    thisTaxon <- taxonList[which(acceptedGUIDS == thisTaxonID)]
     cat("    ", thisTaxon, "\n")
     this_Taxon <- gsub(" ", "_", thisTaxon, fixed = TRUE)
 
@@ -128,8 +128,8 @@ fetchALAdata <- function(taxonList = NULL,
     #theseFields <- unlist(strsplit("id,catalogue_number,taxon_name,institution_code,collection_code,collection_name,latitude,longitude,coordinate_uncertainty,collector,month,year,basis_of_record,verbatim_locality,data_provider,dataset_name", ","))
 
     ans <- data.frame(galah::atlas_occurrences(identify = galah::galah_identify(thisTaxon),
-                                  #filters = galah::select_filters(),
-                                  select = galah::galah_select(theseFields)))
+                                               #filters = galah::select_filters(),
+                                               select = galah::galah_select(theseFields)))
 
     # ans <- ALA4R::occurrences(taxon = paste0("\"",thisTaxon,"\""),
     #                           fields = stdFields, #theseFields,
