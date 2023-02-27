@@ -4,10 +4,12 @@
 \alias{checkTaxonName}
 \title{Check a taxon name against the National Species List maintained by ALA}
 \usage{
-checkTaxonName(thisTaxon = NULL, quiet = TRUE)
+checkTaxonName(thisTaxon = NULL, plantsOnly = TRUE, quiet = TRUE)
 }
 \arguments{
 \item{thisTaxon}{Character object holding the name for which a search is to be made.}
+
+\item{plantsOnly}{Logical. Return information on plant species? Default is TRUE.}
 
 \item{quiet}{Logical. If TRUE progress messages are written to the console; if FALSE (default) then progress messages are suppressed.}
 }

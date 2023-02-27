@@ -4,6 +4,7 @@
 #' Perform a systematic search of taxonomic resources to determine the status of the taxonomic name of a plant species using the resources of APNI and APC.
 #'
 #' @param thisTaxon Character object holding the name for which a search is to be made.
+#' @param plantsOnly Logical. Return information on plant species? Default is TRUE.
 #' @param quiet Logical. If TRUE progress messages are written to the console; if FALSE (default) then progress messages are suppressed.
 #'
 #' @return A one row data.frame with the following elements:
@@ -43,7 +44,7 @@
 #' ### Search for a clearly innvalid name
 #' ans <- checkTaxonName("Greenus plantus")
 #'   }
-checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
+checkTaxonName <- function(thisTaxon = NULL, plantsOnly = TRUE, quiet = TRUE)
 {
   if (is.null(thisTaxon))
     stop("'thisTaxon' cannot be NULL: please supply a taxonomic name")
@@ -95,9 +96,9 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
     return(checkResult)
 
   # Searching by "name" can, and will!!!, return totally non-biological results
-  # such as a geographical entities which vaguely match (fully or partially)
-  # thisTaxon. Test for the existence of non-taxonomic fields in the result
-  # and remove any such results
+  # such as a geographical entities which vaguely match (fully or partially) the
+  # value passed in thisTaxon. Test for the existence of non-taxonomic fields in
+  # the result and remove any such results
   non_biological_ind <- which(unlist(lapply(name_search$searchResults$results, function(el){is.null(el$nomenclaturalCode)})))
   if (length(non_biological_ind) > 0) name_search$searchResults$results <- name_search$searchResults$results[-non_biological_ind]
 
@@ -105,16 +106,19 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
   {
     if (!quiet) cat("  Name search returned a result\n")
 
-    # Remove non-plant elements from results
-    not_Plants_ind <- which(unlist(lapply(name_search$searchResults$results,
-                                          function(el){el$nomenclaturalCode != "ICBN"})))
-    if (length(not_Plants_ind) > 0) name_search$searchResults$results <- name_search$searchResults$results[-not_Plants_ind]
+    if (plantsOnly)
+    {
+      # Remove non-plant elements from results
+      not_Plants_ind <- which(unlist(lapply(name_search$searchResults$results,
+                                            function(el){el$nomenclaturalCode != "ICBN"})))
+      if (length(not_Plants_ind) > 0) name_search$searchResults$results <- name_search$searchResults$results[-not_Plants_ind]
+    }
 
     numResults <- length(name_search$searchResults$results)
 
     if (numResults == 0)
     {
-      if (!quiet) cat("  No results returned from name search: empty result returned\n")
+      if (!quiet) cat("  No results obtained from name search: empty result will be returned\n")
 
       return(invisible(checkResult))
     }
@@ -125,6 +129,10 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
       for (i in 1:numResults)
         name_search$searchResults$results[[i]] <- lapply(name_search$searchResults$results[[i]],
                                                          function(el){if (is.null(el)) el <- "" else el})
+
+      # Do we have an exact name match?
+      exact_match_ind <- which(unlist(lapply(name_search$searchResults$results,
+                                             function(el){grepl(paste0(thisTaxon, "$"), el$nameComplete) & grepl(paste0(thisTaxon, "$"), el$name)})))
 
       # Is an entry saying that searchName is inferredAccepted?
       inferred_ind <- which(unlist(lapply(name_search$searchResults$results,
@@ -137,15 +145,29 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
                                                    name_search$searchResults$results[[ii]]$infoSourceName, "; Common name: ",
                                                    name_search$searchResults$results[[ii]]$commonName))
         inferred_info <- paste(inferred_info, collapse = "| ")
-        name_search$searchResults$results <- name_search$searchResults$results[-inferred_ind]
+        #name_search$searchResults$results <- name_search$searchResults$results[-inferred_ind]
       }
       else
       {
         inferred_info <- ""
       }
 
-      accepted_taxon_ind <- which(unlist(lapply(name_search$searchResults$results,
-                                                function(el){(el$name == thisTaxon) & (el$taxonomicStatus == "accepted")})))
+      if (length(exact_match_ind) == 1)
+      {
+        # OK, we have an exact match which, according to the way ALA does things
+        # as evidenced by the results presented by function in the galah
+        # package, this must be accepted as priority. So, make this the only
+        # result remaining in the searchResults and finalise the extraction of
+        # remaining information
+        accepted_taxon_ind <- exact_match_ind
+      }
+      else
+      {
+        # accepted_taxon_ind <- which(unlist(lapply(name_search$searchResults$results,
+        #                                           function(el){(el$name == thisTaxon) & (el$taxonomicStatus == "accepted")})))
+        accepted_taxon_ind <- which(unlist(lapply(name_search$searchResults$results,
+                                                  function(el){(el$name == thisTaxon) & grepl("^ACCEPTED", toupper(el$taxonomicStatus))})))
+      }
 
       if (length(accepted_taxon_ind) > 0)
       {
@@ -168,13 +190,15 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
         {
           # There may be more than one matching item, so choose just the first index
           # and use that to extract a value for acceptedFullGUID
-          acceptedFullGUID <- name_search$searchResults$results[[name_match_ind[1]]]$acceptedConceptID
+          #acceptedFullGUID <- name_search$searchResults$results[[name_match_ind[1]]]$acceptedConceptID
+          acceptedFullGUID <- name_search$searchResults$results[[name_match_ind[1]]]$speciesGuid
           tmp <- strsplit(acceptedFullGUID, "/")
           guid <- tmp[[1]][length(tmp[[1]])]
 
           if (!quiet)
           {
-            cat("  Accepted concept name : ", name_search$searchResults$results[[name_match_ind[1]]]$acceptedConceptName, "\n")
+            #cat("  Accepted concept name : ", name_search$searchResults$results[[name_match_ind[1]]]$acceptedConceptName, "\n")
+            cat("  Accepted concept name : ", name_search$searchResults$results[[name_match_ind[1]]]$nameComplete, "\n")
             cat("  Accepted concept GUID : ", acceptedFullGUID, "\n")
           }
         }
@@ -193,6 +217,11 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
 
       # Run search using accepted GUID to gather all necessary info including parent info and synonyms
       guid_search <- httr::content(httr::GET("http://bie.ala.org.au/", path = paste0("ws/species/", acceptedFullGUID, ".json")))
+
+      # n <- length(guid_search$taxonConcept)
+      # for (i in 1:n)
+      #   guid_search$taxonConcept[[i]] <- lapply(guid_search$taxonConcept[[i]],
+      #                                                    function(el){if (is.null(el)) el <- "" else el})
 
       if (!quiet)
       {
@@ -285,6 +314,7 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
           specificEpithet = nameParts[2]
           genus <- guid_search$classification$genus
           taxonAuthor <- guid_search$taxonConcept$author
+          if (is.null(taxonAuthor)) taxonAuthor <- ""
           formattedAcceptedName <- paste0("<i>", acceptedName, "</i> ", taxonAuthor)
         }
       }
@@ -297,6 +327,13 @@ checkTaxonName <- function(thisTaxon = NULL, quiet = TRUE)
       # As you can see, the form of the query bears no resemblance to the API documentation on the ALA website...AGAIN....
       record_count_url <- paste0(count_base_url, "?fq=(lsid:", acceptedFullGUID, ")&disableAllQualityFilters=true&pageSize=0")
       totalRecords <- httr::content(httr::GET(record_count_url))$totalRecords
+
+      if (!quiet)
+      {
+        cat("----------------------------------\n")
+        cat("thisTaxon == acceptedName :", thisTaxon == acceptedName, "\n")
+        cat("----------------------------------\n")
+      }
 
       # Make a data.frame for return
       checkResult <- data.frame(isValid = TRUE,
