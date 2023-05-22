@@ -150,7 +150,7 @@ filterALAdata <- function(taxa = NULL,
       # Record type filter:
       basisColInd <- grep("^basisOfRecord", colnames(theRecords))
 
-      if (grepl(toupper(recType), "HERBARIUMRECORDS"))
+      if (grepl(toupper(recType), "HERBARIUM_RECORDS"))
       {
         theRecords <- theRecords[grep("PRESERVED_SPECIMEN", theRecords[, basisColInd]), ]
 
