@@ -147,7 +147,10 @@ fetchALAdata <- function(taxonList = NULL,
     ##### AVH-supplied specimen data
 
     # Select only PreservedSpecimens sourced from AVH
-    ansHerb <- subset(ans, ans$dataProvider == "Australia's Virtual Herbarium")
+    #ansHerb <- subset(ans, ans$dataProvider == "Australia's Virtual Herbarium")
+
+    # Selected records marked as PRESERVED_SPECIMEN
+    ansHerb <- subset(ans, ans$basisOfRecord == "PRESERVED_SPECIMEN")
 
     if (nrow(ansHerb) > 0)
     {
@@ -158,7 +161,7 @@ fetchALAdata <- function(taxonList = NULL,
     }
 
     # Select HumanObservations
-    ansHumanObs <- subset(ans, ans$dataProviderName != "Australia's Virtual Herbarium")
+    ansHumanObs <- subset(ans, ans$basisOfRecord == "HUMAN_OBSERVATION")
 
     if (nrow(ansHumanObs) > 0)
     {
