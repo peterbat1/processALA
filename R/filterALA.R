@@ -182,7 +182,7 @@ filterALAdata <- function(taxa = NULL,
         # WARNING! AS USUAL FROM ALA! Also, field name changes mean we must
         # replace 'raw _ locality' with 'verbatimLocality'
         if (trace) cat("   Filter cultivated records: ")
-        badRecords <- grep("^CULTIVATED", toupper(theRecords$verbatimLocality))
+        badRecords <- grep("^CULT", toupper(theRecords$locality))
         if (length(badRecords > 0))
         {
           theRecords <- theRecords[-badRecords,]

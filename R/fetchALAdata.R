@@ -129,7 +129,7 @@ fetchALAdata <- function(taxonList = NULL,
 
     ans <- data.frame(galah::atlas_occurrences(identify = galah::galah_identify(thisTaxon),
                                                #filters = galah::select_filters(),
-                                               select = galah::galah_select(theseFields)))
+                                               select = galah::galah_select(all_of(theseFields))))
 
     # ans <- ALA4R::occurrences(taxon = paste0("\"",thisTaxon,"\""),
     #                           fields = stdFields, #theseFields,
