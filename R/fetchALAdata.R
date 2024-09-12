@@ -127,29 +127,16 @@ fetchALAdata <- function(taxonList = NULL,
 
     destFile <- paste0(destFolder, "/", this_Taxon, ".csv")
     meta_destFile <- paste0(destFolder, "/", this_Taxon, "_metadata.csv")
-    #theseFields <- unlist(strsplit("id,catalogue_number,taxon_name,institution_code,collection_code,collection_name,latitude,longitude,coordinate_uncertainty,collector,month,year,basis_of_record,verbatim_locality,data_provider,dataset_name", ","))
 
     ans <- data.frame(galah::atlas_occurrences(identify = galah::galah_identify(thisTaxon),
-                                               #filters = galah::select_filters(),
                                                select = galah::galah_select(all_of(theseFields))))
 
-    # ans <- ALA4R::occurrences(taxon = paste0("\"",thisTaxon,"\""),
-    #                           fields = stdFields, #theseFields,
-    #                           download_reason_id = 4,
-    #                           email = "peterdonaldwilson@gmail.com",
-    #                           verbose = verbose,
-    #                           use_data_table = FALSE)
-
     write.csv(ans, destFile, row.names = FALSE)
-    #write.csv(ans$meta, meta_destFile, row.names = FALSE)
 
     if (verbose) cat("      CSV-file fetched and saved\n")
 
     ##### Clean and extract component data
     ##### AVH-supplied specimen data
-
-    # Select only PreservedSpecimens sourced from AVH
-    #ansHerb <- subset(ans, ans$dataProvider == "Australia's Virtual Herbarium")
 
     # Selected records marked as PRESERVED_SPECIMEN
     ansHerb <- subset(ans, ans$basisOfRecord == "PRESERVED_SPECIMEN")
