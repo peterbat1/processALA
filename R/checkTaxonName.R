@@ -128,8 +128,7 @@ checkTaxonName <- function(thisTaxon = NULL, plantsOnly = TRUE, quiet = TRUE)
       if (!quiet) cat("  No results obtained from name search: empty result will be returned\n")
 
       return(invisible(checkResult))
-    }
-    else
+    } else
     {
       # Some search names appear to return NULL values in some fields, so patch
       # them so that this don't fail later when the values in those fields are used
@@ -152,7 +151,7 @@ checkTaxonName <- function(thisTaxon = NULL, plantsOnly = TRUE, quiet = TRUE)
 
         # Some search names appear to return NULL values in some fields, so patch
         # them so that this don't fail later when the values in those fields are used
-        for (i in 1:numResults)
+        for (i in 1:length(name_search2$searchResults$results))
           name_search2$searchResults$results[[i]] <- lapply(name_search2$searchResults$results[[i]],
                                                             function(el){if (is.null(el)) el <- "" else el})
 
@@ -166,8 +165,7 @@ checkTaxonName <- function(thisTaxon = NULL, plantsOnly = TRUE, quiet = TRUE)
           taxonAuthor <- name_search2$searchResults$results[[1]]$scientificNameAuthorship
           fullAcceptedName <- name_search2$searchResults$results[[1]]$nameComplete
           totalRecords <- name_search2$searchResults$results[[1]]$occurrenceCount
-        }
-        else
+        }        else
         {
           # Inexplicably, ALA sometimes cannot match the FULL name of the
           # accepted taxon concept during a name search, so we try a guid search
@@ -179,8 +177,7 @@ checkTaxonName <- function(thisTaxon = NULL, plantsOnly = TRUE, quiet = TRUE)
           totalRecords <- name_search_bailout$searchResults$results[[1]]$occurrenceCount
           #stop("Arrrgghh!")
         }
-      }
-      else
+      }      else
       {
         acceptedName <- name_search$searchResults$results[[1]]$scientificName
         acceptedGUID <- strsplit(name_search$searchResults$results[[1]]$guid, "apni/")[[1]][2]
@@ -250,8 +247,7 @@ checkTaxonName <- function(thisTaxon = NULL, plantsOnly = TRUE, quiet = TRUE)
 
         taxonAuthor <- paste(baseAuthor, author)
         formattedAcceptedName <- paste0("<i>", genus, " ", specificEpithet, "</i> ", taxonAuthor, " ", infraSpecificRankAbbrev, " <i>", infraSpecificEpithet, "</i>")
-      }
-      else
+      }      else
       {
         infraSpecificRank <- ""
         infraSpecificEpithet <- ""
@@ -269,8 +265,7 @@ checkTaxonName <- function(thisTaxon = NULL, plantsOnly = TRUE, quiet = TRUE)
             genus <- ""
             taxonAuthor <-guid_search$taxonConcept$author
             formattedAcceptedName <- paste(acceptedName, taxonAuthor)
-          }
-          else
+          }          else
           {
             # Genus
             specificEpithet <- ""
@@ -278,8 +273,7 @@ checkTaxonName <- function(thisTaxon = NULL, plantsOnly = TRUE, quiet = TRUE)
             taxonAuthor <- guid_search$taxonConcept$author
             formattedAcceptedName <- paste0("<i>", acceptedName, "</i> ", paste(acceptedName, taxonAuthor))
           }
-        }
-        else
+        }        else
         {
           # Species
           specificEpithet = nameParts[2]

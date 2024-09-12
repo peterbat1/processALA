@@ -104,6 +104,8 @@ fetchALAdata <- function(taxonList = NULL,
 
     cat("  Name check completed\n")
   }
+  else
+    acceptedGUIDs <- taxonID
 
   # OK, we got this far, so now for the downloads...
   cat("  Processing:\n")
