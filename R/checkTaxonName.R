@@ -164,7 +164,7 @@ checkTaxonName <- function(thisTaxon = NULL, plantsOnly = TRUE, quiet = TRUE)
         {
           taxonAuthor <- name_search2$searchResults$results[[1]]$scientificNameAuthorship
           fullAcceptedName <- name_search2$searchResults$results[[1]]$nameComplete
-          totalRecords <- ifelse(is.null(name_search2$searchResults$results[[1]]$occurrenceCount), 0, name_search2$searchResults$results[[1]]$occurrenceCount)
+          totalRecords <- name_search2$searchResults$results[[1]]$occurrenceCount
         }        else
         {
           # Inexplicably, ALA sometimes cannot match the FULL name of the

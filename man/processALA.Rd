@@ -2,9 +2,14 @@
 % Please edit documentation in R/processALA.R
 \docType{package}
 \name{processALA}
+\alias{processALA-package}
 \alias{processALA}
 \title{\pkg{processALA}}
 \description{
 A set of functions to fetch, filter and clean plant occurrence records from
 the Atlas of Living Australia (ALA)
+}
+\author{
+\strong{Maintainer}: Peter D. Wilson \email{peter.d.wilson@botanicgardens.nsw.gov.au}
+
 }
