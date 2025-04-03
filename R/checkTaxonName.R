@@ -144,7 +144,7 @@ checkTaxonName <- function(thisTaxon = NULL, plantsOnly = TRUE, quiet = TRUE)
       formattedAcceptedName <- paste0("<i>", genus, " ", specificEpithet, "</i> ", name_search_bailout$results$scientific_name_authorship)
     }
 
-    if (name_search_galah$rank %in% c("subspecies", "form"))
+    if (name_search_galah$rank %in% c("subspecies", "form", "variety"))
     {
       genus <- name_search_galah$genus
       specificEpithet <- name_parts[2]
