@@ -1,7 +1,7 @@
 Package: processALA
 Type: Package
 Title: Fetch and Filter ALA Occurrence Data for Plants
-Version: 0.5.5
+Version: 0.6.0
 Authors@R: person("Peter D.", "Wilson", email = "peter.d.wilson@botanicgardens.nsw.gov.au", role = c("aut", "cre"))
 Maintainer: Peter D. Wilson <peterdonaldwilson@gmail.com>
 Description: A set of functions to fetch, filter and clean plant occurrence records from the Atlas of Living Australia (ALA). Filtered and cleaned data are written to csv-formatted text files for subsequent use. Three output files may be produced: herbarium records, human observations, and records from systematic vegetation surveys which are part of the NSW Vegetation Information System (VIS).

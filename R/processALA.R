@@ -9,4 +9,5 @@
 #' @importFrom dplyr bind_rows
 #' @importFrom utils read.csv write.csv
 #' @importFrom sp SpatialPointsDataFrame over
+#' @importFrom stringr str_split
 NULL

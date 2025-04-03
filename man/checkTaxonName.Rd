@@ -49,7 +49,7 @@ Perform a systematic search of taxonomic resources to determine the status of th
 ### Search a valid name
 ans <- checkTaxonName("Acacia linifolia")
 
-### Search for a clearly innvalid name
+### Search for a clearly invalid name
 ans <- checkTaxonName("Greenus plantus")
   }
 }
