@@ -140,7 +140,12 @@ checkTaxonName <- function(thisTaxon = NULL, plantsOnly = TRUE, quiet = TRUE)
       infraSpecificEpithet <- ""
       infraSpecificRankAbbrev <- ""
       taxonomicRank <- name_search_galah$rank
-      taxon_author <- name_search_bailout$searchResults$results[[1]]$scientificNameAuthorship
+
+      if (is.null(name_search_bailout$searchResults$results[[1]]$scientificNameAuthorship))
+        taxon_author <- name_search_galah$scientific_name_authorship
+      else
+        taxon_author <- name_search_bailout$searchResults$results[[1]]$scientificNameAuthorship
+
       formattedAcceptedName <- paste0("<i>", genus, " ", specificEpithet, "</i> ", name_search_bailout$results$scientific_name_authorship)
     }
 
