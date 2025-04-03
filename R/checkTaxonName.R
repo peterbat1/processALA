@@ -88,6 +88,14 @@ checkTaxonName <- function(thisTaxon = NULL, plantsOnly = TRUE, quiet = TRUE)
   class(checkResult) <- c(class(checkResult), "taxonInfo")
   rownames(checkResult) <- ""
 
+  # Abort instantly if user request information and new and therefore completely
+  # unknown to APNI/APC taxon
+  if (grepl("sp. nov.", thisTaxon))
+  {
+    if (!quiet) cat(">>>> Cannot search for species novum\n")
+    return(checkResult)
+  }
+
   if (plantsOnly)
   {
     name_search_galah <- galah::search_taxa(tibble::tibble(kingdom = "Plantae", scientificName = thisTaxon))
